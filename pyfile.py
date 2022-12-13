@@ -7,11 +7,11 @@ class mllog:
     def __init__(self, node, path, type='none'):
         self.node = node
         self.path = path
-        # filename, type (file, dir; error, request, access, unknown, none)
-        self.file = {'filename': path, 'type': type}
+        # type (file, dir; error, request, access, unknown, none)
+        self.type = type
 
     def __str__(self):
-        return f"file: {self.file['filename']} (type {self.file['type']})"
+        return f"file: {self.path} (type {self.type})"
 
 class mllogs:
 
@@ -35,7 +35,7 @@ class mllogs:
             paths = self.config[node].split(',')
             for path in paths:
                 path = path.strip()
-                key = node + '@' + path
+                key = "'" + node + "' @ " + path
                 # add then expand if needed
                 log = mllog (node, path)
                 if key in self.files:
@@ -43,9 +43,9 @@ class mllogs:
                 else:
                     self.files[key] = [log]
                 if os.path.isfile (path):
-                    log.file['type'] = 'file'
+                    log.type = 'file'
                 elif os.path.isdir (path):
-                    log.file['type'] = 'dir'
+                    log.type = 'dir'
                     # get the files and add them too
                     for root, dirs, files in os.walk(path):
                         for filename in files:
@@ -57,31 +57,28 @@ class mllogs:
         
         for key in self.files.keys():
             for file in self.files[key]:
-                print ('> ' + str(file))
-                if file.file['type'] != 'file': continue
-                with open(file.file['filename'], 'r', encoding='UTF-8') as afile:
-                    print ('    reading ...')
+                # print ('> ' + str(file))
+                if file.type != 'file': continue
+                with open(file.path, 'r', encoding='UTF-8') as afile:
                     lines = 0
                     while (line := afile.readline().rstrip()):
-                        print(line)
                         if lines > 5:
                             break
                         elif error_regex.match(line):
-                            file.file['type'] = 'error'
+                            file.type = 'error'
                             break
                         elif access_regex.match(line):
-                            file.file['type'] = 'access'
+                            file.type = 'access'
                             break
                         else:
                             try:
                                 s = json.loads (line)
-                                print (s)
-                                if 'time' in s: file.file['type'] = 'request'
+                                if 'time' in s: file.type = 'request'
                                 break
                             except Exception:
                                 pass
                         lines += 1
-                print ('< ' + str(file))
+                # print ('< ' + str(file))
 
 
 
