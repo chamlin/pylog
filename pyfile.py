@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import sys
 
 class mllog:
 
@@ -9,17 +10,29 @@ class mllog:
         self.path = path
         # type (file, dir; error, request, access, unknown, none)
         self.type = type
+        self.lines_read = 0
+        self.lines_bad = 0
 
     def __str__(self):
-        return f"file: {self.path} (type {self.type})"
+        if self.lines_read == 0:
+            return f"file: {self.path} (type {self.type})"
+        else:
+            return f"file: {self.path} (type {self.type}) {self.lines_bad}/{self.lines_read} lines bad"
 
 class mllogs:
 
     def __init__(self, config):
         self.config = config
         self.files = {}
+        self.data = []
+        self.columns = {}
+        # do some init stuff
+        self.column_order = self.init_leading_columns(['time', 'node'])
+        print (self.column_order)
+        # do some stuff
         self.parse_file_config (config)
         self.detect_file_types ()
+        self.read_files ()
 
     def __str__(self):
         s = ""
@@ -29,10 +42,16 @@ class mllogs:
                 s += "    " + str (file) + "\n"
         return s
 
+    def init_leading_columns (self, order):
+        column_ratings = {}
+        for num, name in [[col, order[col]] for col in range(len(order))]:
+            column_ratings[name] = f"!{num:04d}"
+        return lambda colname: column_ratings.get(colname, colname)
+
     def parse_file_config (self, config):
         # set up basic
-        for node in self.config.keys():
-            paths = self.config[node].split(',')
+        for node, config_path in self.config.items():
+            paths = config_path.split(',')
             for path in paths:
                 path = path.strip()
                 key = "'" + node + "' @ " + path
@@ -55,30 +74,60 @@ class mllogs:
         error_regex = re.compile ('\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+ (Finest|Finer|Fine|Debug|Config|Info|Notice|Warning|Error|Critical|Alert|Emergency): ')
         access_regex = re.compile ('\S+\s\S+\s\S+\s\[\d+/\w+/\d\d\d\d:\d\d:\d\d:\d\d.*HTTP')
         
-        for key in self.files.keys():
-            for file in self.files[key]:
-                # print ('> ' + str(file))
+        for key, files in self.files.items():
+            for file in files:
                 if file.type != 'file': continue
                 with open(file.path, 'r', encoding='UTF-8') as afile:
                     lines = 0
-                    while (line := afile.readline().rstrip()):
-                        if lines > 5:
-                            break
-                        elif error_regex.match(line):
-                            file.type = 'error'
-                            break
-                        elif access_regex.match(line):
-                            file.type = 'access'
-                            break
-                        else:
-                            try:
-                                s = json.loads (line)
-                                if 'time' in s: file.type = 'request'
+                    try:
+                        while (line := afile.readline().rstrip()):
+                            if lines > 5:
                                 break
-                            except Exception:
-                                pass
-                        lines += 1
-                # print ('< ' + str(file))
+                            elif error_regex.match(line):
+                                file.type = 'error'
+                                break
+                            elif access_regex.match(line):
+                                file.type = 'access'
+                                break
+                            else:
+                                try:
+                                    s = json.loads (line)
+                                    if 'time' in s: file.type = 'request'
+                                    break
+                                except Exception:
+                                    pass
+                            lines += 1
+                    except Exception:
+                        print (f"Bad read in {file.path}, can't determine type.", file=sys.stderr, flush=True)
+
+    def read_files(self):
+        print ("Reading files", file=sys.stderr, flush=True)
+        for key, files in self.files.items():
+            for file in files:
+                if file.type != 'request': continue
+                print ("- " + file.path, file=sys.stderr, flush=True)
+                with open(file.path, 'r', encoding='UTF-8') as afile:
+                    lines_read, lines_bad = [0, 0]
+                    while (line := afile.readline().rstrip()):
+                        lines_read += 1
+                        try:
+                            s = json.loads (line)
+                            s['node'] = file.node
+                            self.columns.update(s)   
+                            self.data.append(s)
+                        except Exception:
+                            lines_bad += 1
+                            print(f"Bad line from {file.path}: " + line,  file=sys.stderr)
+                file.lines_read = lines_read
+                file.lines_bad = lines_bad
+        # just keep the keys
+        self.columns = sorted(self.columns.keys(), key=self.column_order)
+        #self.columns.sort()
+
+    def dump_data(self):
+        columns = self.columns
 
 
-
+    def column_sort (first_columns):
+        pass
+        

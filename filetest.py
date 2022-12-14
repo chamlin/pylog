@@ -9,3 +9,4 @@ file_config = {
 }
 logs = log.mllogs (file_config)
 print (logs)
+print (logs.columns)
