@@ -106,6 +106,8 @@ class mllogs:
             for file in files:
                 if file.type == 'request':
                     self.read_request_file (file)
+                elif file.type == 'access':
+                    self.read_access_file (file)
         # just keep the keys
         self.columns = sorted(self.columns.keys(), key=self.column_order)
 
@@ -121,12 +123,36 @@ class mllogs:
                     # TODO - genericize?
                     vals['_fname'] = file.path
                     vals['_ftype'] = file.type
-                    vals['_lnum'] = lines_read
                     self.columns.update(vals)   
                     self.data.append(vals)
                 except Exception:
                     lines_bad += 1
-                    print(f"Bad line from {file.path}: " + line,  file=sys.stderr)
+                    print(f"Bad line from request file {file.path}: " + line,  file=sys.stderr)
+        file.lines_read = lines_read
+        file.lines_bad = lines_bad
+
+
+    def read_access_file (self, file):
+        access_regex = re.compile ('(\S+)\s(\S+)\s(\S+)\s\[(\d+)/(\w+)/(\d\d\d\d):(\d\d):(\d\d):(\d\d) ([^]]+)\] "(\w+) (\S+) (\S+)" (\d+) (\S+) (\S+) "([^"]+)"')
+        access_columns = ('ip', 'thing', 'user', 'day', 'month', 'year', 'hour', 'minute', 'second', 'timezone', 'method', 'URL', 'protocol', 'response', 'bytes', 'referrer', 'client')
+
+        print ("- " + file.path, file=sys.stderr, flush=True)
+        with open(file.path, 'r', encoding='UTF-8') as request_file:
+            lines_read, lines_bad = [0, 0]
+            while (line := request_file.readline().rstrip()):
+                lines_read += 1
+                try:
+                    m = access_regex.match(line)
+                    vals = {'_fname': file.path, '_ftype': file.type}
+                    for index in range(len(access_columns)):
+                        vals[access_columns[index]] = m.group(index+1)
+                    # TODO - genericize?
+                    self.columns.update(vals)   
+                    self.data.append(vals)
+                except Exception as oops:
+                    lines_bad += 1
+                    print(f"Bad line from access file {file.path}: " + line,  file=sys.stderr)
+                    print (oops)
         file.lines_read = lines_read
         file.lines_bad = lines_bad
 
