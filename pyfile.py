@@ -27,7 +27,7 @@ class mllogs:
         self.data = []
         self.columns = {}
         # do some init stuff
-        self.column_order = self.init_leading_columns(['time', 'node'])
+        self.column_order = self.init_leading_columns(['time', 'node', '_ftype'])
         print (self.column_order)
         # do some stuff
         self.parse_file_config (config)
@@ -113,6 +113,10 @@ class mllogs:
                         try:
                             s = json.loads (line)
                             s['node'] = file.node
+                            # TODO - genericize?
+                            s['_fname'] = file.path
+                            s['_ftype'] = file.type
+                            s['_lnum'] = lines_read
                             self.columns.update(s)   
                             self.data.append(s)
                         except Exception:
