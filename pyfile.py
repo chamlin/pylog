@@ -122,12 +122,11 @@ class mllogs:
                 file.lines_bad = lines_bad
         # just keep the keys
         self.columns = sorted(self.columns.keys(), key=self.column_order)
-        #self.columns.sort()
 
     def dump_data(self):
         columns = self.columns
+        # header
+        print ('\t'.join (columns))
+        for row in self.data:
+            print ('\t'.join([str(row.get(col,'')) for col in columns]))
 
-
-    def column_sort (first_columns):
-        pass
-        
