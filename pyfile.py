@@ -104,28 +104,33 @@ class mllogs:
         print ("Reading files", file=sys.stderr, flush=True)
         for key, files in self.files.items():
             for file in files:
-                if file.type != 'request': continue
-                print ("- " + file.path, file=sys.stderr, flush=True)
-                with open(file.path, 'r', encoding='UTF-8') as afile:
-                    lines_read, lines_bad = [0, 0]
-                    while (line := afile.readline().rstrip()):
-                        lines_read += 1
-                        try:
-                            s = json.loads (line)
-                            s['node'] = file.node
-                            # TODO - genericize?
-                            s['_fname'] = file.path
-                            s['_ftype'] = file.type
-                            s['_lnum'] = lines_read
-                            self.columns.update(s)   
-                            self.data.append(s)
-                        except Exception:
-                            lines_bad += 1
-                            print(f"Bad line from {file.path}: " + line,  file=sys.stderr)
-                file.lines_read = lines_read
-                file.lines_bad = lines_bad
+                if file.type == 'request':
+                    self.read_request_file (file)
         # just keep the keys
         self.columns = sorted(self.columns.keys(), key=self.column_order)
+
+    def read_request_file (self, file):
+        print ("- " + file.path, file=sys.stderr, flush=True)
+        with open(file.path, 'r', encoding='UTF-8') as request_file:
+            lines_read, lines_bad = [0, 0]
+            while (line := request_file.readline().rstrip()):
+                lines_read += 1
+                try:
+                    vals = json.loads (line)
+                    vals['node'] = file.node
+                    # TODO - genericize?
+                    vals['_fname'] = file.path
+                    vals['_ftype'] = file.type
+                    vals['_lnum'] = lines_read
+                    self.columns.update(vals)   
+                    self.data.append(vals)
+                except Exception:
+                    lines_bad += 1
+                    print(f"Bad line from {file.path}: " + line,  file=sys.stderr)
+        file.lines_read = lines_read
+        file.lines_bad = lines_bad
+
+        
 
     def dump_data(self):
         columns = self.columns
