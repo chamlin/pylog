@@ -162,29 +162,7 @@ class mllogs:
         file.lines_read = lines_read
         file.lines_bad = lines_bad
 
-    def read_error_filex (self, file):
-        prefix_regex = re.compile ('(?P<time>\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+) (?P<level>\S+):\s(?P<rest>.*)')
-
-        print ("- " + file.path, file=sys.stderr, flush=True)
-        with open(file.path, 'r', encoding='UTF-8') as request_file:
-            lines_read, lines_bad = [0, 0]
-            while (line := request_file.readline().rstrip()):
-                lines_read += 1
-                try:
-                    m = prefix_regex.match(line)
-                    # TODO - genericize?
-                    vals = {'_fname': file.path, '_ftype': file.type, 'time': m.group('time')}
-                    self.columns.update(vals)   
-                    self.data.append(vals)
-                except Exception as oops:
-                    lines_bad += 1
-                    print(f"Bad line from access file {file.path}: " + line,  file=sys.stderr)
-                    print (oops)
-        file.lines_read = lines_read
-        file.lines_bad = lines_bad
-
     def read_error_file (self, file):
-        prefix_regex = re.compile ('(?P<time>\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+) (?P<level>\S+):\s(?P<rest>.*)')
 
         print ("- " + file.path, file=sys.stderr, flush=True)
         with open(file.path, 'r', encoding='UTF-8') as request_file:
