@@ -26,6 +26,8 @@ class mllogs:
         self.files = {}
         self.data = []
         self.columns = {}
+        self.months = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12}
+
         # do some init stuff
         self.column_order = self.init_leading_columns(['time', 'node', '_ftype'])
         print (self.column_order)
@@ -143,10 +145,13 @@ class mllogs:
                 lines_read += 1
                 try:
                     m = access_regex.match(line)
+                    # TODO - genericize?
+                    # TODO - save timezone?
                     vals = {'_fname': file.path, '_ftype': file.type}
                     for index in range(len(access_columns)):
                         vals[access_columns[index]] = m.group(index+1)
-                    # TODO - genericize?
+                    vals['time'] = f"{int(vals['day']):02d}-{self.months[vals['month']]:02d}-{int(vals['year']):04d}"
+                    vals['time'] += f" {int(vals['hour']):02d}:{int(vals['minute']):02d}:{int(vals['second']):02d}"
                     self.columns.update(vals)   
                     self.data.append(vals)
                 except Exception as oops:
