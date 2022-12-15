@@ -162,7 +162,7 @@ class mllogs:
         file.lines_read = lines_read
         file.lines_bad = lines_bad
 
-    def read_error_file (self, file):
+    def read_error_filex (self, file):
         prefix_regex = re.compile ('(?P<time>\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+) (?P<level>\S+):\s(?P<rest>.*)')
 
         print ("- " + file.path, file=sys.stderr, flush=True)
@@ -173,7 +173,6 @@ class mllogs:
                 try:
                     m = prefix_regex.match(line)
                     # TODO - genericize?
-                    # TODO - save timezone?
                     vals = {'_fname': file.path, '_ftype': file.type, 'time': m.group('time')}
                     self.columns.update(vals)   
                     self.data.append(vals)
@@ -183,6 +182,39 @@ class mllogs:
                     print (oops)
         file.lines_read = lines_read
         file.lines_bad = lines_bad
+
+    def read_error_file (self, file):
+        prefix_regex = re.compile ('(?P<time>\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+) (?P<level>\S+):\s(?P<rest>.*)')
+
+        print ("- " + file.path, file=sys.stderr, flush=True)
+        with open(file.path, 'r', encoding='UTF-8') as request_file:
+            lines_read, lines_bad = [0, 0]
+            while (line := request_file.readline().rstrip()):
+                lines_read += 1
+                rows_out = self.classify_error_line(file, line)
+                if len(rows_out) > 0:
+                    self.data += rows_out
+                    [self.columns.update(row) for row in rows_out]
+                else:
+                    print(f"Bad line from access file {file.path}: " + line,  file=sys.stderr)
+                    lines_bad += 1
+        file.lines_read = lines_read
+        file.lines_bad = lines_bad
+
+    def classify_error_line (self, file, line):
+        prefix_regex = re.compile ('(?P<time>\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+) (?P<level>\S+):\s(?P<rest>.*)')
+        # return list of extracted rows.  0 means error or bad line, whatever
+        retval = []
+
+        try:
+            m = prefix_regex.match(line)
+            # TODO - genericize?
+            vals = {'_fname': file.path, '_ftype': file.type, 'time': m.group('time'), 'node': file.node}
+            retval.append(vals)
+        except Exception:
+            pass
+
+        return retval
 
 
 
