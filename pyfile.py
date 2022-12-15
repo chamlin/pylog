@@ -30,7 +30,6 @@ class mllogs:
 
         # do some init stuff
         self.column_order = self.init_leading_columns(['time', 'node', '_ftype'])
-        print (self.column_order)
         # do some stuff
         self.parse_file_config (config)
         self.detect_file_types ()
@@ -110,6 +109,8 @@ class mllogs:
                     self.read_request_file (file)
                 elif file.type == 'access':
                     self.read_access_file (file)
+                elif file.type == 'error':
+                    self.read_error_file (file)
         # just keep the keys
         self.columns = sorted(self.columns.keys(), key=self.column_order)
 
@@ -161,8 +162,32 @@ class mllogs:
         file.lines_read = lines_read
         file.lines_bad = lines_bad
 
-        
+    def read_error_file (self, file):
+        prefix_regex = re.compile ('(?P<time>\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+) (?P<level>\S+):\s(?P<rest>.*)')
 
+        print ("- " + file.path, file=sys.stderr, flush=True)
+        with open(file.path, 'r', encoding='UTF-8') as request_file:
+            lines_read, lines_bad = [0, 0]
+            while (line := request_file.readline().rstrip()):
+                lines_read += 1
+                try:
+                    m = prefix_regex.match(line)
+                    # TODO - genericize?
+                    # TODO - save timezone?
+                    vals = {'_fname': file.path, '_ftype': file.type, 'time': m.group('time')}
+                    self.columns.update(vals)   
+                    self.data.append(vals)
+                except Exception as oops:
+                    lines_bad += 1
+                    print(f"Bad line from access file {file.path}: " + line,  file=sys.stderr)
+                    print (oops)
+        file.lines_read = lines_read
+        file.lines_bad = lines_bad
+
+
+
+
+        
     def dump_data(self):
         columns = self.columns
         # header
