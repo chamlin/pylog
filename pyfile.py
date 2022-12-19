@@ -130,7 +130,7 @@ class mllogs:
                     self.data.append(vals)
                 except Exception:
                     lines_bad += 1
-                    print(f"Bad line from request file {file.path}: " + line,  file=sys.stderr)
+                    print(f"Bad line from request file {file.path}: " + line,  file=sys.stderr, flush=True)
         file.lines_read = lines_read
         file.lines_bad = lines_bad
 
@@ -157,8 +157,8 @@ class mllogs:
                     self.data.append(vals)
                 except Exception as oops:
                     lines_bad += 1
-                    print(f"Bad line from access file {file.path}: " + line,  file=sys.stderr)
-                    print (oops)
+                    print(f"Bad line from access file {file.path}: " + line,  file=sys.stderr, flush=True)
+                    print (oops, file=sys.stderr, flush=True)
         file.lines_read = lines_read
         file.lines_bad = lines_bad
 
@@ -174,7 +174,7 @@ class mllogs:
                     self.data += rows_out
                     [self.columns.update(row) for row in rows_out]
                 else:
-                    print(f"Bad line from access file {file.path}: " + line,  file=sys.stderr)
+                    print(f"Bad line from access file {file.path}: " + line,  file=sys.stderr, flush=True)
                     lines_bad += 1
         file.lines_read = lines_read
         file.lines_bad = lines_bad
@@ -187,7 +187,7 @@ class mllogs:
         try:
             m = prefix_regex.match(line)
             # TODO - genericize?
-            vals = {'_fname': file.path, '_ftype': file.type, 'time': m.group('time'), 'node': file.node}
+            vals = {'_fname': file.path, '_ftype': file.type, 'time': m.group('time'), 'node': file.node, 'level': m.group('level')}
             retval.append(vals)
         except Exception:
             pass
