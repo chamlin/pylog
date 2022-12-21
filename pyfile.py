@@ -29,7 +29,7 @@ class mllogs:
         self.months = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12}
 
         # do some init stuff
-        self.column_order = self.init_leading_columns(['time', 'node', '_ftype'])
+        self.column_order = self.init_leading_columns(['time', 'node', 'event-type', '_ftype'])
         # do some stuff
         self.parse_file_config (config)
         self.detect_file_types ()
@@ -124,8 +124,10 @@ class mllogs:
                     vals = json.loads (line)
                     vals['node'] = file.node
                     # TODO - genericize?
+                    vals['event-type'] = 'request_logging'
                     vals['_fname'] = file.path
                     vals['_ftype'] = file.type
+                    vals['_fline'] = lines_read
                     self.columns.update(vals)   
                     self.data.append(vals)
                 except Exception:
@@ -148,11 +150,12 @@ class mllogs:
                     m = access_regex.match(line)
                     # TODO - genericize?
                     # TODO - save timezone?
-                    vals = {'_fname': file.path, '_ftype': file.type}
+                    vals = {'_fname': file.path, '_ftype': file.type, '_fline': lines_read}
                     for index in range(len(access_columns)):
                         vals[access_columns[index]] = m.group(index+1)
                     vals['time'] = f"{int(vals['day']):02d}-{self.months[vals['month']]:02d}-{int(vals['year']):04d}"
                     vals['time'] += f" {int(vals['hour']):02d}:{int(vals['minute']):02d}:{int(vals['second']):02d}"
+                    vals['event-type'] = 'access_logging'
                     self.columns.update(vals)   
                     self.data.append(vals)
                 except Exception as oops:
@@ -169,28 +172,38 @@ class mllogs:
             lines_read, lines_bad = [0, 0]
             while (line := request_file.readline().rstrip()):
                 lines_read += 1
-                rows_out = self.classify_error_line(file, line)
+                rows_out = self.classify_error_line(file, line, lines_read)
                 if len(rows_out) > 0:
                     self.data += rows_out
                     [self.columns.update(row) for row in rows_out]
                 else:
-                    print(f"Bad line from access file {file.path}: " + line,  file=sys.stderr, flush=True)
+                    print(f"Couldn't classify line from file {file.path}, #{lines_read}: " + line,  file=sys.stderr, flush=True)
                     lines_bad += 1
         file.lines_read = lines_read
         file.lines_bad = lines_bad
 
-    def classify_error_line (self, file, line):
-        prefix_regex = re.compile ('(?P<time>\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+) (?P<level>\S+):\s(?P<rest>.*)')
+    def classify_error_line (self, file, line, line_number):
+        prefix_regex = re.compile ('(?P<time>\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+) (?P<level>\S+):\s(?P<text>.*)')
         # return list of extracted rows.  0 means error or bad line, whatever
         retval = []
 
         try:
             m = prefix_regex.match(line)
+            text = m.group('text')
             # TODO - genericize?
-            vals = {'_fname': file.path, '_ftype': file.type, 'time': m.group('time'), 'node': file.node, 'level': m.group('level')}
+            vals = {'_fname': file.path, '_ftype': file.type, '_fline': line_number, 'time': m.group('time'), 'node': file.node, 'level': m.group('level'), 'text': text}
+            if text.startswith ('Memory '):
+                vals['event-type'] = 'memory-logging'
+                r = re.compile ('(\w+)=(\d+)\((\d+)%\)')
+                for stat in r.findall (text):
+                    name = stat[0]
+                    vals[name+'-mb'] = stat[1]
+                    vals[name+'-percent'] = stat[2]
+                
             retval.append(vals)
-        except Exception:
-            pass
+        except Exception as e:
+            # TODO Avoid error when continued line as   Bad line from access file testdir/TaskServer_ErrorLog_6.txt, #15: 2022-12-06 10:36:52.768 Notice:+in /log.xqy, at 7:10 [1.0-ml]
+            print (f"Error in classification of line in {file.path} #{line_number}: {e}", file=sys.stderr, flush=True)
 
         return retval
 
