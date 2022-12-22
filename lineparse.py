@@ -1,7 +1,7 @@
-#!/usr/local/bin/python3
-import os
-import sys
 import re
+
+
+# individual functions here for extraction
 
 def memfun (line):
     retval = {'event-type': 'memory-logging'}
@@ -12,6 +12,10 @@ def memfun (line):
         retval[name+'-mb'] = stat[1]
         retval[name+'-percent'] = stat[2]
     return [retval] if extracted else []
+
+
+
+# here are the configs to control extraction
 
 # in to extract:  text of line
 # out from extract:  list of dicts, each an event with 'event-type' and some other value(s)
@@ -25,8 +29,22 @@ extract_config = {
     ]
 }
 
+# master blaster, using configs
 
-def runfun (line):
+def extract_events (line):
+    '''
+    Extracts event info from the text of an ErrorLog line
+
+    Parameters
+    ----------
+    line : string
+        the text of an ErrorLog line (after the 'Level: ' part
+    
+
+    Returns
+    -------
+    A list of dictionaries, with event-type and some other value(s)
+    ''' 
     retval = []
     for extracter in extract_config.get (line[0], []):
         if line.startswith (extracter.get('starts', 'dOnTmAtCh')):
@@ -35,15 +53,4 @@ def runfun (line):
             # TODO stop if continue false and match?
             retval += extract
     return retval
-
-
-# can be more than one?
-s = 'Memory size=18727(29%) rss=18353(28%) anon=18209(28%) file=54(0%) forest=938(1%) cache=20480(32%) registry=7(0%)'
-
-retval = runfun(s)
-
-
-
-
-print(retval)
 

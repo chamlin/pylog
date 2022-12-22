@@ -3,6 +3,8 @@ import re
 import json
 import sys
 
+import lineparse
+
 class mllog:
 
     def __init__(self, node, path, type='none'):
@@ -29,7 +31,7 @@ class mllogs:
         self.months = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12}
 
         # do some init stuff
-        self.column_order = self.init_leading_columns(['time', 'node', 'event-type', '_ftype'])
+        self.column_order = self.init_leading_columns(['time', 'node', 'event-type', '_ftype', 'level'])
         # do some stuff
         self.parse_file_config (config)
         self.detect_file_types ()
@@ -124,7 +126,7 @@ class mllogs:
                     vals = json.loads (line)
                     vals['node'] = file.node
                     # TODO - genericize?
-                    vals['event-type'] = 'request_logging'
+                    vals['event-type'] = 'request-logging'
                     vals['_fname'] = file.path
                     vals['_ftype'] = file.type
                     vals['_fline'] = lines_read
@@ -155,7 +157,7 @@ class mllogs:
                         vals[access_columns[index]] = m.group(index+1)
                     vals['time'] = f"{int(vals['day']):02d}-{self.months[vals['month']]:02d}-{int(vals['year']):04d}"
                     vals['time'] += f" {int(vals['hour']):02d}:{int(vals['minute']):02d}:{int(vals['second']):02d}"
-                    vals['event-type'] = 'access_logging'
+                    vals['event-type'] = 'access-logging'
                     self.columns.update(vals)   
                     self.data.append(vals)
                 except Exception as oops:
@@ -192,15 +194,10 @@ class mllogs:
             text = m.group('text')
             # TODO - genericize?
             vals = {'_fname': file.path, '_ftype': file.type, '_fline': line_number, 'time': m.group('time'), 'node': file.node, 'level': m.group('level'), 'text': text}
-            if text.startswith ('Memory '):
-                vals['event-type'] = 'memory-logging'
-                r = re.compile ('(\w+)=(\d+)\((\d+)%\)')
-                for stat in r.findall (text):
-                    name = stat[0]
-                    vals[name+'-mb'] = stat[1]
-                    vals[name+'-percent'] = stat[2]
-                
-            retval.append(vals)
+            # OK here?
+            for event in lineparse.extract_events(text):
+                event.update (vals)
+                retval.append (event)
         except Exception as e:
             # TODO Avoid error when continued line as   Bad line from access file testdir/TaskServer_ErrorLog_6.txt, #15: 2022-12-06 10:36:52.768 Notice:+in /log.xqy, at 7:10 [1.0-ml]
             print (f"Error in classification of line in {file.path} #{line_number}: {e}", file=sys.stderr, flush=True)
