@@ -1,0 +1,3 @@
+M:
+Memory size=18727(29%) rss=18353(28%) anon=18209(28%) file=54(0%) forest=938(1%) cache=20480(32%) registry=7(0%)
+[{'event-type': 'memory-logging', 'size-mb': '18727', 'size-percent': '29', 'rss-mb': '18353', 'rss-percent': '28', 'anon-mb': '18209', 'anon-percent': '28', 'file-mb': '54', 'file-percent': '0', 'forest-mb': '938', 'forest-percent': '1', 'cache-mb': '20480', 'cache-percent': '32', 'registry-mb': '7', 'registry-percent': '0'}]
