@@ -21,10 +21,11 @@ def generalfun (init, line, regex, names):
     result = re.findall (regex, line)[0]
     if isinstance(result, str):
         result = [result]
+    retval = dict(init)
     if result:
         for i in range(len(names)):
-            init[names[i]] = result[i]
-        return [init]
+            retval[names[i]] = result[i]
+        return [retval]
     return []
 
 
@@ -34,14 +35,23 @@ def generalfun (init, line, regex, names):
 # out from extract:  list of dicts, each an event with 'event-type' and some other value(s)
 # tests:  array of test lines to check functioning
 extract_config = {
+    'D': [
+        { 'starts': 'Deleted ',
+          'general-extract': {'init': {'event-type': 'deleted-stand'}, 'names': ['size', 'rate', 'stand'], 'regex': 'Deleted (\d+) MB at (\d+) MB/sec (.*)'},
+          'tests': ['Deleted 25 MB at 7066 MB/sec /var/opt/MarkLogic/Forests/Meters/00004222']
+        }
+    ],
     'M': [
         { 'starts': 'Memory ',
           'extract': memfun,
           'tests': ['Memory size=18727(29%) rss=18353(28%) anon=18209(28%) file=54(0%) forest=938(1%) cache=20480(32%) registry=7(0%)']
         },
         { 'starts': 'Merged ',
-          'general-extract': {'init': {'event-type': 'merged'}, 'names': ['size', 'rate', 'stand'], 'regex': 'Merged (\d+) MB at (\d+) MB/sec to (.*)'},
-          'tests': ['Merged 6 MB at 25 MB/sec to /var/opt/MarkLogic/Forests/rddr-content-1/00003c60']
+          'general-extract': {'init': {'event-type': 'merged'}, 'names': ['size', 'rate', 'stand'], 'regex': 'Merged (\d+) MB(?: in \d+ sec)? at (\d+) MB/sec to (.*)'},
+          'tests': [
+              'Merged 6 MB at 25 MB/sec to /var/opt/MarkLogic/Forests/rddr-content-1/00003c60',
+              'Merged 51 MB in 2 sec at 25 MB/sec to /var/opt/MarkLogic/Forests/Meters/0000418d'
+          ]
         }
     ],
     'S': [
@@ -72,7 +82,7 @@ def extract_events (line):
     -------
     A list of dictionaries, with event-type and some other value(s)
     ''' 
-    retval = []
+    retval = list()
     for extracter in extract_config.get (line[0], []):
         if line.startswith (extracter.get('starts', 'dOnTmAtCh')):
             if 'extract' in extracter:
@@ -82,6 +92,7 @@ def extract_events (line):
                 extract = generalfun(params['init'], line, params['regex'], params['names'])
             #extract = exfun(line)
             # TODO stop if continue false and match?
-            retval += extract
+            if extract:
+                retval += extract
     return retval
 

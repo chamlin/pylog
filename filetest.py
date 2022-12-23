@@ -6,7 +6,8 @@ import pyfile as log
 
 file_config = {
     '1': 'node1',
-    '2': 'testdir'
+    '2': 'testdir/'
+    #'1': 'foo'
 }
 logs = log.mllogs (file_config)
 print (logs, file=sys.stderr, flush=True)

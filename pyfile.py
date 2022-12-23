@@ -39,6 +39,7 @@ class mllogs:
 
     def __str__(self):
         s = ""
+        s += f'total rows: {len(self.data)}\n'
         for key in self.files:
             s += f"{key}:\n"
             for file in self.files[key]:
@@ -152,7 +153,7 @@ class mllogs:
                     m = access_regex.match(line)
                     # TODO - genericize?
                     # TODO - save timezone?
-                    vals = {'_fname': file.path, '_ftype': file.type, '_fline': lines_read}
+                    vals = {'_fname': file.path, '_ftype': file.type, '_fline': lines_read, 'node': file.node}
                     for index in range(len(access_columns)):
                         vals[access_columns[index]] = m.group(index+1)
                     vals['time'] = f"{int(vals['day']):02d}-{self.months[vals['month']]:02d}-{int(vals['year']):04d}"
@@ -169,25 +170,29 @@ class mllogs:
 
     def read_error_file (self, file):
 
-        print ("- " + file.path, file=sys.stderr, flush=True)
+        print ("> " + file.path, file=sys.stderr, flush=True)
         with open(file.path, 'r', encoding='UTF-8') as request_file:
             lines_read, lines_bad = [0, 0]
             while (line := request_file.readline().rstrip()):
                 lines_read += 1
                 rows_out = self.classify_error_line(file, line, lines_read)
                 if len(rows_out) > 0:
-                    self.data += rows_out
-                    [self.columns.update(row) for row in rows_out]
+                    for row in rows_out:
+                        self.data.append(row)
+                        self.columns.update(row)
                 else:
                     print(f"Couldn't classify line from file {file.path}, #{lines_read}: " + line,  file=sys.stderr, flush=True)
                     lines_bad += 1
+                if lines_read > 100:
+                    break
         file.lines_read = lines_read
         file.lines_bad = lines_bad
+        print ("< " + file.path, file=sys.stderr, flush=True)
 
     def classify_error_line (self, file, line, line_number):
         prefix_regex = re.compile ('(?P<time>\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+) (?P<level>\S+):\s(?P<text>.*)')
         # return list of extracted rows.  0 means error or bad line, whatever
-        retval = []
+        retval = list()
 
         try:
             m = prefix_regex.match(line)
@@ -205,13 +210,12 @@ class mllogs:
         return retval
 
 
-
-
         
     def dump_data(self):
         columns = self.columns
         # header
         print ('\t'.join (columns))
         for row in self.data:
-            print ('\t'.join([str(row.get(col,'')) for col in columns]))
+            vals = [str(row.get(column,'')) for column in columns]
+            print ('\t'.join(vals))
 
