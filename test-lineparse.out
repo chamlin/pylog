@@ -1,3 +1,30 @@
+
+D:
+Deleted 25 MB at 7066 MB/sec /var/opt/MarkLogic/Forests/Meters/00004222
+[{'event': 'deleted-stand', 'size': '25', 'rate': '7066', 'stand': '/var/opt/MarkLogic/Forests/Meters/00004222'}]
+
+
 M:
 Memory size=18727(29%) rss=18353(28%) anon=18209(28%) file=54(0%) forest=938(1%) cache=20480(32%) registry=7(0%)
-[{'event-type': 'memory-logging', 'size-mb': '18727', 'size-percent': '29', 'rss-mb': '18353', 'rss-percent': '28', 'anon-mb': '18209', 'anon-percent': '28', 'file-mb': '54', 'file-percent': '0', 'forest-mb': '938', 'forest-percent': '1', 'cache-mb': '20480', 'cache-percent': '32', 'registry-mb': '7', 'registry-percent': '0'}]
+[{'event': 'memory-logging', 'size-mb': '18727', 'size-percent': '29', 'rss-mb': '18353', 'rss-percent': '28', 'anon-mb': '18209', 'anon-percent': '28', 'file-mb': '54', 'file-percent': '0', 'forest-mb': '938', 'forest-percent': '1', 'cache-mb': '20480', 'cache-percent': '32', 'registry-mb': '7', 'registry-percent': '0'}]
+
+Merged 6 MB at 25 MB/sec to /var/opt/MarkLogic/Forests/rddr-content-1/00003c60
+[{'event': 'merged', 'size': '6', 'rate': '25', 'stand': '/var/opt/MarkLogic/Forests/rddr-content-1/00003c60'}]
+
+Merged 51 MB in 2 sec at 25 MB/sec to /var/opt/MarkLogic/Forests/Meters/0000418d
+[{'event': 'merged', 'size': '51', 'rate': '25', 'stand': '/var/opt/MarkLogic/Forests/Meters/0000418d'}]
+
+Merging 83 MB from /var/opt/MarkLogic/Forests/Meters/00004197, /var/opt/MarkLogic/Forests/Meters/00004198, and /var/opt/MarkLogic/Forests/Meters/00004196 to /var/opt/MarkLogic/Forests/Meters/0000419a, timestamp=16488943209770340
+[{'event': 'merge-to', 'stand': '/var/opt/MarkLogic/Forests/Meters/0000419a', 'size': '83', 'timestamp': '16488943209770340'}, {'event': 'merge-from', 'stand': '/var/opt/MarkLogic/Forests/Meters/00004197'}, {'event': 'merge-from', 'stand': '/var/opt/MarkLogic/Forests/Meters/00004198'}, {'event': 'merge-from', 'stand': 'and /var/opt/MarkLogic/Forests/Meters/00004196'}]
+
+Merging 37 MB from /var/opt/MarkLogic/Forests/Meters/00004182 and /var/opt/MarkLogic/Forests/Meters/00004180 to /var/opt/MarkLogic/Forests/Meters/00004184, timestamp=16488943209770340
+[{'event': 'merge-to', 'stand': '/var/opt/MarkLogic/Forests/Meters/00004184', 'size': '37', 'timestamp': '16488943209770340'}, {'event': 'merge-from', 'stand': '/var/opt/MarkLogic/Forests/Meters/00004182'}, {'event': 'merge-from', 'stand': '/var/opt/MarkLogic/Forests/Meters/00004180'}]
+
+
+S:
+Saving /var/opt/MarkLogic/Forests/rddr-content-1/00003c5b
+[{'event': 'saving-stand', 'stand': '/var/opt/MarkLogic/Forests/rddr-content-1/00003c5b'}]
+
+Saved 10 MB at 119 MB/sec to /var/opt/MarkLogic/Forests/rddr-content-1/00003c61
+[{'event': 'saved-stand', 'size': '10', 'rate': '119', 'stand': '/var/opt/MarkLogic/Forests/rddr-content-1/00003c61'}]
+
