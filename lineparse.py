@@ -58,8 +58,11 @@ extract_config = {
           'tests': ['~OnDiskStand /var/replica-prod/Forests/P_initial_r11_04/00019082']
         },
         { 'starts': '~InMemoryStand',
-          'general-extract': {'init': {'event': 'in-memory-stand-end'}, 'names': ['stand'], 'regex': '~InMemoryStand (.*?), '},
-          'tests': ['~InMemoryStand /Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa7, indexes storage used % : rangeIndex=5%, reverseIndex=0%, tripleIndex=100%, geospatialRegionIndex=2%']
+          'general-extract': {'init': {'event': 'in-memory-stand-end'}, 'names': ['stand'], 'regex': '~InMemoryStand (.*?)(, .*)?$'},
+          'tests': [
+            '~InMemoryStand /Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa7, indexes storage used % : rangeIndex=5%, reverseIndex=0%, tripleIndex=100%, geospatialRegionIndex=2%',
+            '~InMemoryStand /MarkLogic_Data/Forests/P_smartws_r2_02/0001191c'
+          ]
         }
     ],
     '[': [

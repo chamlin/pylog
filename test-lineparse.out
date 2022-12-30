@@ -64,3 +64,6 @@ Saved 10 MB at 119 MB/sec to /var/opt/MarkLogic/Forests/rddr-content-1/00003c61
 ~InMemoryStand /Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa7, indexes storage used % : rangeIndex=5%, reverseIndex=0%, tripleIndex=100%, geospatialRegionIndex=2%
 [{'event': 'in-memory-stand-end', 'stand': '/Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa7'}]
 
+~InMemoryStand /MarkLogic_Data/Forests/P_smartws_r2_02/0001191c
+[{'event': 'in-memory-stand-end', 'stand': '/MarkLogic_Data/Forests/P_smartws_r2_02/0001191c'}]
+
