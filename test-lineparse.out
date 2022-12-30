@@ -8,6 +8,9 @@ F:
 Forest::insert: Meters XDMP-INMMTRPLFULL: In-memory triple storage full; list: table=6%, wordsused=7%, wordsfree=91%, overhead=2%; tree: table=1%, wordsused=15%, wordsfree=85%, overhead=0%
 [{'event': 'forest-insert', 'stand': 'Meters', 'code': 'XDMP-INMMTRPLFULL'}]
 
+Forest::doInsert: XDMP-INMMTREEFULL: In-memory tree storage full; list: table=1%, wordsused=30%, wordsfree=68%, overhead=2%; tree: table=16%, wordsused=100%, wordsfree=0%, overhead=0%
+[{'event': 'forest-insert', 'code': 'XDMP-INMMTREEFULL'}]
+
 
 I:
 InMemoryStand /Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa9, disk=1MB, memory=457MB, list=48MB, tree=24MB, rangeIndex=16MB, reverseIndex=16MB, tripleIndex=384MB, geospatialRegionIndex=16MB

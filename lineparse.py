@@ -79,6 +79,11 @@ extract_config = {
         { 'starts': 'Forest::insert: ',
           'general-extract': {'init': {'event': 'forest-insert'}, 'names': ['stand', 'code'], 'regex': 'Forest::insert: (\S+) (XDMP-.+?FULL): '},
           'tests': ['Forest::insert: Meters XDMP-INMMTRPLFULL: In-memory triple storage full; list: table=6%, wordsused=7%, wordsfree=91%, overhead=2%; tree: table=1%, wordsused=15%, wordsfree=85%, overhead=0%']
+        },
+        # TODO extract %s?,   is this the right event name?
+        { 'starts': 'Forest::doInsert: ',
+          'general-extract': {'init': {'event': 'forest-insert'}, 'names': ['code'], 'regex': 'Forest::doInsert: (XDMP-.+?FULL): '},
+          'tests': ['Forest::doInsert: XDMP-INMMTREEFULL: In-memory tree storage full; list: table=1%, wordsused=30%, wordsfree=68%, overhead=2%; tree: table=16%, wordsused=100%, wordsfree=0%, overhead=0%']
         }
     ],
     'I': [
