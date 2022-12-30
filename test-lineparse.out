@@ -6,7 +6,7 @@ Deleted 25 MB at 7066 MB/sec /var/opt/MarkLogic/Forests/Meters/00004222
 
 I:
 InMemoryStand /Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa9, disk=1MB, memory=457MB, list=48MB, tree=24MB, rangeIndex=16MB, reverseIndex=16MB, tripleIndex=384MB, geospatialRegionIndex=16MB
-[{'event': 'inmemory-stand', 'stand': '/Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa9', 'disk': '1', 'memory': '457', 'list': '48', 'tree': '24', 'rangeIndex': '16', 'reverseIndex': '16', 'tripleIndex': '384', 'geospatialRegionIndex': '16'}]
+[{'event': 'in-memory-stand', 'stand': '/Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa9', 'disk': '1', 'memory': '457', 'list': '48', 'tree': '24', 'rangeIndex': '16', 'reverseIndex': '16', 'tripleIndex': '384', 'geospatialRegionIndex': '16'}]
 
 
 M:
@@ -28,7 +28,7 @@ Merging 37 MB from /var/opt/MarkLogic/Forests/Meters/00004182 and /var/opt/MarkL
 
 O:
 OnDiskStand /MarkLogic_Data/Forests/P_initial_p23_04/00058661, disk=201MB, edisk=0MB, memory=16MB
-[{'event': 'ondisk-stand', 'stand': '/MarkLogic_Data/Forests/P_initial_p23_04/00058661', 'disk': '201', 'edisk': '0', 'memory': '16'}]
+[{'event': 'on-disk-stand', 'stand': '/MarkLogic_Data/Forests/P_initial_p23_04/00058661', 'disk': '201', 'edisk': '0', 'memory': '16'}]
 
 
 R:
@@ -51,5 +51,8 @@ Saved 10 MB at 119 MB/sec to /var/opt/MarkLogic/Forests/rddr-content-1/00003c61
 
 ~:
 ~OnDiskStand /var/replica-prod/Forests/P_initial_r11_04/00019082
-[{'event': 'ondisk-stand-end', 'stand': '/var/replica-prod/Forests/P_initial_r11_04/00019082'}]
+[{'event': 'on-disk-stand-end', 'stand': '/var/replica-prod/Forests/P_initial_r11_04/00019082'}]
+
+~InMemoryStand /Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa7, indexes storage used % : rangeIndex=5%, reverseIndex=0%, tripleIndex=100%, geospatialRegionIndex=2%
+[{'event': 'in-memory-stand-end', 'stand': '/Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa7'}]
 

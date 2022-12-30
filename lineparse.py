@@ -53,8 +53,12 @@ extract_config = {
 
     '~': [
         { 'starts': '~OnDiskStand',
-          'general-extract': {'init': {'event': 'ondisk-stand-end'}, 'names': ['stand'], 'regex': '~OnDiskStand (.*)'},
+          'general-extract': {'init': {'event': 'on-disk-stand-end'}, 'names': ['stand'], 'regex': '~OnDiskStand (.*)'},
           'tests': ['~OnDiskStand /var/replica-prod/Forests/P_initial_r11_04/00019082']
+        },
+        { 'starts': '~InMemoryStand',
+          'general-extract': {'init': {'event': 'in-memory-stand-end'}, 'names': ['stand'], 'regex': '~InMemoryStand (.*?), '},
+          'tests': ['~InMemoryStand /Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa7, indexes storage used % : rangeIndex=5%, reverseIndex=0%, tripleIndex=100%, geospatialRegionIndex=2%']
         }
     ],
     '[': [
@@ -71,7 +75,7 @@ extract_config = {
     ],
     'I': [
         { 'starts': 'InMemoryStand ',
-          'general-extract': {'init': {'event': 'inmemory-stand'}, 'names': ['stand', 'disk', 'memory', 'list', 'tree', 'rangeIndex', 'reverseIndex', 'tripleIndex', 'geospatialRegionIndex'],
+          'general-extract': {'init': {'event': 'in-memory-stand'}, 'names': ['stand', 'disk', 'memory', 'list', 'tree', 'rangeIndex', 'reverseIndex', 'tripleIndex', 'geospatialRegionIndex'],
                 'regex': 'InMemoryStand (.*), disk=(\d+)MB, memory=(\d+)MB, list=(\d+)MB, tree=(\d+)MB, rangeIndex=(\d+)MB, reverseIndex=(\d+)MB, tripleIndex=(\d+)MB, geospatialRegionIndex=(\d+)MB'},
           'tests': ['InMemoryStand /Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa9, disk=1MB, memory=457MB, list=48MB, tree=24MB, rangeIndex=16MB, reverseIndex=16MB, tripleIndex=384MB, geospatialRegionIndex=16MB']
         }
@@ -99,7 +103,7 @@ extract_config = {
     ],
     'O': [
         { 'starts': 'OnDiskStand',
-          'general-extract': {'init': {'event': 'ondisk-stand'}, 'names': ['stand', 'disk', 'edisk', 'memory'], 'regex': 'OnDiskStand (.*), disk=(\d+)MB, edisk=(\d+)MB, memory=(\d+)MB'},
+          'general-extract': {'init': {'event': 'on-disk-stand'}, 'names': ['stand', 'disk', 'edisk', 'memory'], 'regex': 'OnDiskStand (.*), disk=(\d+)MB, edisk=(\d+)MB, memory=(\d+)MB'},
           'tests': ['OnDiskStand /MarkLogic_Data/Forests/P_initial_p23_04/00058661, disk=201MB, edisk=0MB, memory=16MB']
         }
     ],
