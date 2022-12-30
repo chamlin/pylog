@@ -94,6 +94,10 @@ extract_config = {
           'general-extract': {'init': {'event': 'in-memory-stand'}, 'names': ['stand', 'disk', 'memory', 'list', 'tree', 'rangeIndex', 'reverseIndex', 'tripleIndex', 'geospatialRegionIndex'],
                 'regex': 'InMemoryStand (.*), disk=(\d+)MB, memory=(\d+)MB, list=(\d+)MB, tree=(\d+)MB, rangeIndex=(\d+)MB, reverseIndex=(\d+)MB, tripleIndex=(\d+)MB, geospatialRegionIndex=(\d+)MB'},
           'tests': ['InMemoryStand /Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa9, disk=1MB, memory=457MB, list=48MB, tree=24MB, rangeIndex=16MB, reverseIndex=16MB, tripleIndex=384MB, geospatialRegionIndex=16MB']
+        },
+        { 'starts': 'IndexerEnv::putRangeIndex: XDMP-',
+          'general-extract': {'init': {'event': 'put-range-index'}, 'names': ['code'], 'regex': 'XDMP-.* (XDMP-[^:]+)'},
+          'tests': ['IndexerEnv::putRangeIndex: XDMP-RANGEINDEX: Range index error: long fn:doc("/at/ksv/current/orders/9b0ca175-e26b-e86d-2151-00a49da8db01.xml")/*:customerorder/*:orderEntity/*:zip: XDMP-LEXVAL: Invalid lexical value ""']
         }
     ],
     'M': [

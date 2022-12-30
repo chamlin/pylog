@@ -16,6 +16,9 @@ I:
 InMemoryStand /Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa9, disk=1MB, memory=457MB, list=48MB, tree=24MB, rangeIndex=16MB, reverseIndex=16MB, tripleIndex=384MB, geospatialRegionIndex=16MB
 [{'event': 'in-memory-stand', 'stand': '/Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa9', 'disk': '1', 'memory': '457', 'list': '48', 'tree': '24', 'rangeIndex': '16', 'reverseIndex': '16', 'tripleIndex': '384', 'geospatialRegionIndex': '16'}]
 
+IndexerEnv::putRangeIndex: XDMP-RANGEINDEX: Range index error: long fn:doc("/at/ksv/current/orders/9b0ca175-e26b-e86d-2151-00a49da8db01.xml")/*:customerorder/*:orderEntity/*:zip: XDMP-LEXVAL: Invalid lexical value ""
+[{'event': 'put-range-index', 'code': 'XDMP-LEXVAL'}]
+
 
 M:
 Memory size=18727(29%) rss=18353(28%) anon=18209(28%) file=54(0%) forest=938(1%) cache=20480(32%) registry=7(0%)
