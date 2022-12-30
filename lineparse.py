@@ -90,6 +90,12 @@ extract_config = {
         }
 
     ],
+    'O': [
+        { 'starts': 'OnDiskStand',
+          'general-extract': {'init': {'event': 'ondisk-stand'}, 'names': ['stand', 'disk', 'edisk', 'memory'], 'regex': 'OnDiskStand (.*), disk=(\d+)MB, edisk=(\d+)MB, memory=(\d+)MB'},
+          'tests': ['OnDiskStand /MarkLogic_Data/Forests/P_initial_p23_04/00058661, disk=201MB, edisk=0MB, memory=16MB']
+        }
+    ],
     'R': [
         { 'starts': 'Refragmented',
           'general-extract': {'init': {'event': 'reindexer'}, 'names': ['reason', 'fragments', 'duration', 'rate', 'forest'], 'regex': 'Refragmented (.+) (\d+) fragments in (\d+) sec at (\d+) .* forest (.*)'},

@@ -21,6 +21,11 @@ Merging 37 MB from /var/opt/MarkLogic/Forests/Meters/00004182 and /var/opt/MarkL
 [{'event': 'merge-to', 'stand': '/var/opt/MarkLogic/Forests/Meters/00004184', 'size': '37', 'timestamp': '16488943209770340'}, {'event': 'merge-from', 'stand': '/var/opt/MarkLogic/Forests/Meters/00004182'}, {'event': 'merge-from', 'stand': '/var/opt/MarkLogic/Forests/Meters/00004180'}]
 
 
+O:
+OnDiskStand /MarkLogic_Data/Forests/P_initial_p23_04/00058661, disk=201MB, edisk=0MB, memory=16MB
+[{'event': 'ondisk-stand', 'stand': '/MarkLogic_Data/Forests/P_initial_p23_04/00058661', 'disk': '201', 'edisk': '0', 'memory': '16'}]
+
+
 R:
 Refragmented new fields 10000 fragments in 20 sec at 496 fragments/sec on forest P_smartws_p2_04
 [{'event': 'reindexer', 'reason': 'new fields', 'fragments': '10000', 'duration': '20', 'rate': '496', 'forest': 'P_smartws_p2_04'}]
