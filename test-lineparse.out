@@ -21,10 +21,20 @@ Merging 37 MB from /var/opt/MarkLogic/Forests/Meters/00004182 and /var/opt/MarkL
 [{'event': 'merge-to', 'stand': '/var/opt/MarkLogic/Forests/Meters/00004184', 'size': '37', 'timestamp': '16488943209770340'}, {'event': 'merge-from', 'stand': '/var/opt/MarkLogic/Forests/Meters/00004182'}, {'event': 'merge-from', 'stand': '/var/opt/MarkLogic/Forests/Meters/00004180'}]
 
 
+R:
+Refragmented new fields 10000 fragments in 20 sec at 496 fragments/sec on forest P_smartws_p2_04
+[{'event': 'reindexer', 'reason': 'new fields', 'fragments': '10000', 'duration': '20', 'rate': '496', 'forest': 'P_smartws_p2_04'}]
+
+
 S:
 Saving /var/opt/MarkLogic/Forests/rddr-content-1/00003c5b
 [{'event': 'saving-stand', 'stand': '/var/opt/MarkLogic/Forests/rddr-content-1/00003c5b'}]
 
 Saved 10 MB at 119 MB/sec to /var/opt/MarkLogic/Forests/rddr-content-1/00003c61
 [{'event': 'saved-stand', 'size': '10', 'rate': '119', 'stand': '/var/opt/MarkLogic/Forests/rddr-content-1/00003c61'}]
+
+
+[:
+[Event:id=Reindexer Trace] Refragmented new fields 10002 fragments in 58 sec at 171 fragments/sec on forest P_initial_p25_01
+[{'event': 'reindexer', 'reason': 'new fields', 'fragments': '10002', 'duration': '58', 'rate': '171', 'forest': 'P_initial_p25_01'}]
 

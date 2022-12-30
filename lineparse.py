@@ -4,6 +4,7 @@ import re
 
 # individual functions here for extraction
 
+# returns multiple events, one for each stand mentioned
 def mergingfun (line):
     retval = list()
     groups = (re.findall (r'Merging (\d+) MB from (.*) to (.*), timestamp=(\d+)', line))[0]
@@ -31,6 +32,7 @@ def generalfun (init, line, regex, names):
     names = [names] if isinstance(names, str) else names
     extracted = False
     result = re.findall (regex, line)[0]
+    #print ('line: ', line, '. regex: ', regex)
     if isinstance(result, str):
         result = [result]
     retval = dict(init)
@@ -47,6 +49,14 @@ def generalfun (init, line, regex, names):
 # out from extract:  list of dicts, each an event with 'event' and some other value(s)
 # tests:  array of test lines to check functioning
 extract_config = {
+
+
+    '[': [
+        { 'starts': '[Event:id=Reindexer Trace]',
+          'general-extract': {'init': {'event': 'reindexer'}, 'names': ['reason', 'fragments', 'duration', 'rate', 'forest'], 'regex': '.*Refragmented (.+) (\d+) fragments in (\d+) sec at (\d+) .* forest (.*)'},
+          'tests': ['[Event:id=Reindexer Trace] Refragmented new fields 10002 fragments in 58 sec at 171 fragments/sec on forest P_initial_p25_01']
+        }
+    ],
     'D': [
         { 'starts': 'Deleted ',
           'general-extract': {'init': {'event': 'deleted-stand'}, 'names': ['size', 'rate', 'stand'], 'regex': 'Deleted (\d+) MB at (\d+) MB/sec (.*)'},
@@ -73,6 +83,12 @@ extract_config = {
           ]
         }
 
+    ],
+    'R': [
+        { 'starts': 'Refragmented',
+          'general-extract': {'init': {'event': 'reindexer'}, 'names': ['reason', 'fragments', 'duration', 'rate', 'forest'], 'regex': 'Refragmented (.+) (\d+) fragments in (\d+) sec at (\d+) .* forest (.*)'},
+          'tests': ['Refragmented new fields 10000 fragments in 20 sec at 496 fragments/sec on forest P_smartws_p2_04']
+        }
     ],
     'S': [
         { 'starts': 'Saving ',
