@@ -31,16 +31,17 @@ def memfun (line):
 def generalfun (init, line, regex, names):
     names = [names] if isinstance(names, str) else names
     extracted = False
-    result = re.findall (regex, line)[0]
+    found = re.findall (regex, line)
+    if (len (found) < 1):
+        return []
+    result = found[0]
     #print ('line: ', line, '. regex: ', regex)
     if isinstance(result, str):
         result = [result]
     retval = dict(init)
-    if result:
-        for i in range(len(names)):
-            retval[names[i]] = result[i]
-        return [retval]
-    return []
+    for i in range(len(names)):
+        retval[names[i]] = result[i]
+    return [retval]
 
 
 # here are the configs to control extraction
@@ -71,6 +72,13 @@ extract_config = {
         { 'starts': 'Deleted ',
           'general-extract': {'init': {'event': 'stand-deleted'}, 'names': ['size', 'rate', 'stand'], 'regex': 'Deleted (\d+) MB at (\d+) MB/sec (.*)'},
           'tests': ['Deleted 25 MB at 7066 MB/sec /var/opt/MarkLogic/Forests/Meters/00004222']
+        }
+    ],
+    'F': [
+        # TODO extract %s?,   is this the right event name?
+        { 'starts': 'Forest::insert: ',
+          'general-extract': {'init': {'event': 'forest-insert'}, 'names': ['stand', 'code'], 'regex': 'Forest::insert: (\S+) (XDMP-.+?FULL): '},
+          'tests': ['Forest::insert: Meters XDMP-INMMTRPLFULL: In-memory triple storage full; list: table=6%, wordsused=7%, wordsfree=91%, overhead=2%; tree: table=1%, wordsused=15%, wordsfree=85%, overhead=0%']
         }
     ],
     'I': [

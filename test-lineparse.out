@@ -4,6 +4,11 @@ Deleted 25 MB at 7066 MB/sec /var/opt/MarkLogic/Forests/Meters/00004222
 [{'event': 'stand-deleted', 'size': '25', 'rate': '7066', 'stand': '/var/opt/MarkLogic/Forests/Meters/00004222'}]
 
 
+F:
+Forest::insert: Meters XDMP-INMMTRPLFULL: In-memory triple storage full; list: table=6%, wordsused=7%, wordsfree=91%, overhead=2%; tree: table=1%, wordsused=15%, wordsfree=85%, overhead=0%
+[{'event': 'forest-insert', 'stand': 'Meters', 'code': 'XDMP-INMMTRPLFULL'}]
+
+
 I:
 InMemoryStand /Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa9, disk=1MB, memory=457MB, list=48MB, tree=24MB, rangeIndex=16MB, reverseIndex=16MB, tripleIndex=384MB, geospatialRegionIndex=16MB
 [{'event': 'in-memory-stand', 'stand': '/Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa9', 'disk': '1', 'memory': '457', 'list': '48', 'tree': '24', 'rangeIndex': '16', 'reverseIndex': '16', 'tripleIndex': '384', 'geospatialRegionIndex': '16'}]
