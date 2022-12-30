@@ -51,6 +51,12 @@ def generalfun (init, line, regex, names):
 extract_config = {
 
 
+    '~': [
+        { 'starts': '~OnDiskStand',
+          'general-extract': {'init': {'event': 'ondisk-stand-end'}, 'names': ['stand'], 'regex': '~OnDiskStand (.*)'},
+          'tests': ['~OnDiskStand /var/replica-prod/Forests/P_initial_r11_04/00019082']
+        }
+    ],
     '[': [
         { 'starts': '[Event:id=Reindexer Trace]',
           'general-extract': {'init': {'event': 'reindexer'}, 'names': ['reason', 'fragments', 'duration', 'rate', 'forest'], 'regex': '.*Refragmented (.+) (\d+) fragments in (\d+) sec at (\d+) .* forest (.*)'},

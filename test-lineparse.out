@@ -38,3 +38,8 @@ Saved 10 MB at 119 MB/sec to /var/opt/MarkLogic/Forests/rddr-content-1/00003c61
 [Event:id=Reindexer Trace] Refragmented new fields 10002 fragments in 58 sec at 171 fragments/sec on forest P_initial_p25_01
 [{'event': 'reindexer', 'reason': 'new fields', 'fragments': '10002', 'duration': '58', 'rate': '171', 'forest': 'P_initial_p25_01'}]
 
+
+~:
+~OnDiskStand /var/replica-prod/Forests/P_initial_r11_04/00019082
+[{'event': 'ondisk-stand-end', 'stand': '/var/replica-prod/Forests/P_initial_r11_04/00019082'}]
+
