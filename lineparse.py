@@ -65,8 +65,15 @@ extract_config = {
     ],
     'D': [
         { 'starts': 'Deleted ',
-          'general-extract': {'init': {'event': 'deleted-stand'}, 'names': ['size', 'rate', 'stand'], 'regex': 'Deleted (\d+) MB at (\d+) MB/sec (.*)'},
+          'general-extract': {'init': {'event': 'stand-deleted'}, 'names': ['size', 'rate', 'stand'], 'regex': 'Deleted (\d+) MB at (\d+) MB/sec (.*)'},
           'tests': ['Deleted 25 MB at 7066 MB/sec /var/opt/MarkLogic/Forests/Meters/00004222']
+        }
+    ],
+    'I': [
+        { 'starts': 'InMemoryStand ',
+          'general-extract': {'init': {'event': 'inmemory-stand'}, 'names': ['stand', 'disk', 'memory', 'list', 'tree', 'rangeIndex', 'reverseIndex', 'tripleIndex', 'geospatialRegionIndex'],
+                'regex': 'InMemoryStand (.*), disk=(\d+)MB, memory=(\d+)MB, list=(\d+)MB, tree=(\d+)MB, rangeIndex=(\d+)MB, reverseIndex=(\d+)MB, tripleIndex=(\d+)MB, geospatialRegionIndex=(\d+)MB'},
+          'tests': ['InMemoryStand /Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa9, disk=1MB, memory=457MB, list=48MB, tree=24MB, rangeIndex=16MB, reverseIndex=16MB, tripleIndex=384MB, geospatialRegionIndex=16MB']
         }
     ],
     'M': [
