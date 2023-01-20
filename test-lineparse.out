@@ -22,7 +22,10 @@ IndexerEnv::putRangeIndex: XDMP-RANGEINDEX: Range index error: long fn:doc("/at/
 
 M:
 Memory size=18727(29%) rss=18353(28%) anon=18209(28%) file=54(0%) forest=938(1%) cache=20480(32%) registry=7(0%)
-[{'event': 'memory-logging', 'size-mb': '18727', 'size-percent': '29', 'rss-mb': '18353', 'rss-percent': '28', 'anon-mb': '18209', 'anon-percent': '28', 'file-mb': '54', 'file-percent': '0', 'forest-mb': '938', 'forest-percent': '1', 'cache-mb': '20480', 'cache-percent': '32', 'registry-mb': '7', 'registry-percent': '0'}]
+[{'event': 'memory-logging', 'size-mb': 18727, 'size-percent': 29, 'rss-mb': 18353, 'rss-percent': 28, 'anon-mb': 18209, 'anon-percent': 28, 'file-mb': 54, 'file-percent': 0, 'forest-mb': 938, 'forest-percent': 1, 'cache-mb': 20480, 'cache-percent': 32, 'registry-mb': 7, 'registry-percent': 0, 'huge-anon-swap-file-percent': 28, 'forest-cache-percent': 33}]
+
+Memory 27% phys=772438 size=327735(42%) rss=96046(12%) huge=116584(15%) anon=18172(2%) file=192331(24%) forest=226365(29%) cache=81920(10%) registry=1(0%)
+[{'event': 'memory-logging', 'size-mb': 327735, 'size-percent': 42, 'rss-mb': 96046, 'rss-percent': 12, 'huge-mb': 116584, 'huge-percent': 15, 'anon-mb': 18172, 'anon-percent': 2, 'file-mb': 192331, 'file-percent': 24, 'forest-mb': 226365, 'forest-percent': 29, 'cache-mb': 81920, 'cache-percent': 10, 'registry-mb': 1, 'registry-percent': 0, 'huge-anon-swap-file-percent': 41, 'forest-cache-percent': 39}]
 
 Merged 6 MB at 25 MB/sec to /var/opt/MarkLogic/Forests/rddr-content-1/00003c60
 [{'event': 'merged', 'size': '6', 'rate': '25', 'stand': '/var/opt/MarkLogic/Forests/rddr-content-1/00003c60'}]

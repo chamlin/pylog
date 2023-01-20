@@ -21,9 +21,11 @@ def memfun (line):
     extracted = False
     for stat in re.findall (r'(\w+)=(\d+)\((\d+)%\)', line):
         name = stat[0]
-        retval[name+'-mb'] = stat[1]
-        retval[name+'-percent'] = stat[2]
+        retval[name+'-mb'] = int(stat[1])
+        retval[name+'-percent'] = int(stat[2])
         extracted = True
+    retval['huge-anon-swap-file-percent'] = retval.get('huge-percent',0) + retval.get('anon-percent',0) + retval.get('swap-percent',0) + retval.get('file-percent',0)
+    retval['forest-cache-percent'] = retval.get('forest-percent',0) + retval.get('cache-percent',0)
     return [retval] if extracted else []
 
 # init should have initialized dict; at least event-name
@@ -103,7 +105,11 @@ extract_config = {
     'M': [
         { 'starts': 'Memory ',
           'extract': memfun,
-          'tests': ['Memory size=18727(29%) rss=18353(28%) anon=18209(28%) file=54(0%) forest=938(1%) cache=20480(32%) registry=7(0%)']
+          'tests': [
+              'Memory size=18727(29%) rss=18353(28%) anon=18209(28%) file=54(0%) forest=938(1%) cache=20480(32%) registry=7(0%)',
+              'Memory 27% phys=772438 size=327735(42%) rss=96046(12%) huge=116584(15%) anon=18172(2%) file=192331(24%) forest=226365(29%) cache=81920(10%) registry=1(0%)'
+          ]
+
         },
         { 'starts': 'Merged ',
           'general-extract': {'init': {'event': 'merged'}, 'names': ['size', 'rate', 'stand'], 'regex': 'Merged (\d+) MB(?: in \d+ sec)? at (\d+) MB/sec to (.*)'},
