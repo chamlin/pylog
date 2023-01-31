@@ -17,7 +17,7 @@ def mergingfun (line):
         return retval
 
 def memfun (line):
-    retval = {'event': 'memory-logging'}
+    retval = {'event': 'memory'}
     extracted = False
     for stat in re.findall (r'(\w+)=(\d+)\((\d+)%\)', line):
         name = stat[0]
@@ -28,7 +28,7 @@ def memfun (line):
     retval['forest-cache-percent'] = retval.get('forest-percent',0) + retval.get('cache-percent',0)
     return [retval] if extracted else []
 
-# init should have initialized dict; at least event-name
+# init should have initialized dict; at least event
 # names can be str or list of str
 def generalfun (init, line, regex, names):
     names = [names] if isinstance(names, str) else names

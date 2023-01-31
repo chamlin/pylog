@@ -31,7 +31,7 @@ class mllogs:
         self.months = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12}
 
         # do some init stuff
-        self.column_order = self.init_leading_columns(['time', 'node', 'event-type', '_ftype', 'level'])
+        self.column_order = self.init_leading_columns(['datetime', 'node', 'event', 'log-type', 'level'])
         # do some stuff
         self.parse_file_config (config)
         self.detect_file_types ()
@@ -125,12 +125,13 @@ class mllogs:
                 lines_read += 1
                 try:
                     vals = json.loads (line)
+                    vals['datetime'] = re.sub('-\d\d:\d\d','',vals.pop('time'))
                     vals['node'] = file.node
                     # TODO - genericize?
-                    vals['event-type'] = 'request-logging'
-                    vals['_fname'] = file.path
-                    vals['_ftype'] = file.type
-                    vals['_fline'] = lines_read
+                    vals['event'] = 'request'
+                    vals['log-path'] = file.path
+                    vals['log-type'] = file.type
+                    vals['log-line'] = lines_read
                     self.columns.update(vals)   
                     self.data.append(vals)
                 except Exception:
@@ -143,6 +144,7 @@ class mllogs:
     def read_access_file (self, file):
         access_regex = re.compile ('(\S+)\s(\S+)\s(\S+)\s\[(\d+)/(\w+)/(\d\d\d\d):(\d\d):(\d\d):(\d\d) ([^]]+)\] "(\w+) (\S+) (\S+)" (\d+) (\S+) (\S+) "([^"]+)"')
         access_columns = ('ip', 'thing', 'user', 'day', 'month', 'year', 'hour', 'minute', 'second', 'timezone', 'method', 'URL', 'protocol', 'response', 'bytes', 'referrer', 'client')
+        access_columns_dropped = ('day', 'month', 'year', 'hour', 'minute', 'second', 'timezone')
 
         print ("- " + file.path, file=sys.stderr, flush=True)
         with open(file.path, 'r', encoding='UTF-8') as request_file:
@@ -153,12 +155,14 @@ class mllogs:
                     m = access_regex.match(line)
                     # TODO - genericize?
                     # TODO - save timezone?
-                    vals = {'_fname': file.path, '_ftype': file.type, '_fline': lines_read, 'node': file.node}
+                    vals = {'log-path': file.path, 'log-type': file.type, 'log-line': lines_read, 'node': file.node, 'text': line}
                     for index in range(len(access_columns)):
                         vals[access_columns[index]] = m.group(index+1)
-                    vals['time'] = f"{int(vals['day']):02d}-{self.months[vals['month']]:02d}-{int(vals['year']):04d}"
-                    vals['time'] += f" {int(vals['hour']):02d}:{int(vals['minute']):02d}:{int(vals['second']):02d}"
-                    vals['event-type'] = 'access-logging'
+                    vals['datetime'] = f"{int(vals['year']):04d}-{self.months[vals['month']]:02d}-{int(vals['day']):02d}"
+                    vals['datetime'] += f" {int(vals['hour']):02d}:{int(vals['minute']):02d}:{int(vals['second']):02d}"
+                    vals['event'] = 'access'
+                    for dropped_column in access_columns_dropped:
+                        vals.pop(dropped_column)
                     self.columns.update(vals)   
                     self.data.append(vals)
                 except Exception as oops:
@@ -190,7 +194,7 @@ class mllogs:
         print ("< " + file.path, file=sys.stderr, flush=True)
 
     def classify_error_line (self, file, line, line_number):
-        prefix_regex = re.compile ('(?P<time>\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+) (?P<level>\S+):\s(?P<text>.*)')
+        prefix_regex = re.compile ('(?P<datetime>\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+) (?P<level>\S+):\s(?P<text>.*)')
         # return list of extracted rows.  0 means error or bad line, whatever
         retval = list()
 
@@ -198,7 +202,7 @@ class mllogs:
             m = prefix_regex.match(line)
             text = m.group('text')
             # TODO - genericize?
-            vals = {'_fname': file.path, '_ftype': file.type, '_fline': line_number, 'time': m.group('time'), 'node': file.node, 'level': m.group('level'), 'text': text}
+            vals = {'log-path': file.path, 'log-type': file.type, 'log-line': line_number, 'datetime': m.group('datetime'), 'node': file.node, 'level': m.group('level'), 'text': text}
             # OK here?
             for event in lineparse.extract_events(text):
                 event.update (vals)
