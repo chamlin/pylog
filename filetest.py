@@ -19,3 +19,6 @@ logs = log.mllogs (j)
 logs.read_data()
 logs.dump_data()
 
+print ("\n\nfile stats:\n", file=sys.stderr, flush=True)
+print (logs, file=sys.stderr, flush=True)
+
