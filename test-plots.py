@@ -8,7 +8,7 @@ from datetime import datetime
 # default size
 plt.rc('figure', figsize=(15, 8))
 
-stats = pd.read_csv ('out.tsv', sep='\t', parse_dates=['datetime'], dtype = {'node': 'string' })
+stats = pd.read_csv ('out.tsv', sep='\t', parse_dates=['datetime'], dtype = {'node': 'string' }, low_memory=False)
 
 
 # set index to timestamp and remove column

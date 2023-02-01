@@ -7,19 +7,20 @@ import lineparse
 
 class mllog:
 
-    def __init__(self, node, path, type='none'):
+    def __init__(self, node, path, port=None, type='unknown'):
         self.node = node
         self.path = path
         # type (file, dir; error, request, access, unknown, none)
         self.type = type
         self.lines_read = 0
         self.lines_bad = 0
+        self.port = port
 
     def __str__(self):
         if self.lines_read == 0:
-            return f"file: {self.path} (type {self.type})"
+            return f"file: {self.path} (node {self.node}, type {self.type}, port {self.port})"
         else:
-            return f"file: {self.path} (type {self.type}) {self.lines_bad}/{self.lines_read} lines bad"
+            return f"file: {self.path} (node {self.node}, type {self.type}, port {self.port}), {self.lines_bad}/{self.lines_read} lines bad"
 
 class mllogs:
 
@@ -35,16 +36,18 @@ class mllogs:
         # do some stuff
         self.parse_file_config (config)
         self.detect_file_types ()
-        self.read_files ()
+        self.get_port_numbers ()
+
 
     def __str__(self):
         s = ""
         s += f'total rows: {len(self.data)}\n'
         for key in self.files:
-            s += f"{key}:\n"
-            for file in self.files[key]:
-                s += "    " + str (file) + "\n"
+            s += f"{key}:     " + str (self.files[key]) + "\n"
         return s
+
+    def read_data (self):
+        self.read_files ()
 
     def init_leading_columns (self, order):
         column_ratings = {}
@@ -53,18 +56,22 @@ class mllogs:
         return lambda colname: column_ratings.get(colname, colname)
 
     def parse_file_config (self, config):
+        print ('config: ', self.config['files'], file=sys.stderr, flush=True)
         # set up basic
-        for node, config_path in self.config.items():
-            paths = config_path.split(',')
+        for config in self.config['files']:
+            if not 'node' in config:  config['node'] = 'X'
+            paths = config['path'].split(',')
+            node = config['node']
+            port_given = config.get ('port', None)
             for path in paths:
                 path = path.strip()
-                key = "'" + node + "' @ " + path
                 # add then expand if needed
-                log = mllog (node, path)
-                if key in self.files:
-                    self.files[key].append(log)
+                log = mllog (node, path, port_given)
+                if path in self.files:
+                    print (f'Ignoring file for "{path}", duplicate.', file=sys.stderr, flush=True)
+                    continue
                 else:
-                    self.files[key] = [log]
+                    self.files[path] = log
                 if os.path.isfile (path):
                     log.type = 'file'
                 elif os.path.isdir (path):
@@ -72,48 +79,65 @@ class mllogs:
                     # get the files and add them too
                     for root, dirs, files in os.walk(path):
                         for filename in files:
-                            self.files[key].append (mllog (node, os.path.join(root, filename), 'file'))
-    
+                            path = os.path.join(root, filename)
+                            if path in self.files:
+                                print (f'Ignoring file for "{path}", duplicate.', file=sys.stderr, flush=True)
+                            else:
+                                self.files[path] = mllog (node, path, type='file')
+                else:
+                    log.type = 'unknown'
+
+    def get_port_numbers (self):
+        for key, file in self.files.items():
+            # order dependent
+            if file.port is not None: continue
+            filename = re.sub ('.*/', '', file.path)
+            port_regex = re.compile ('^(?P<port>\d\d\d\d\d?)_')
+            try:
+                m = port_regex.match(filename)
+                port = m.group('port')
+                file.port = port
+            except Exception as e:
+                pass
+
     def detect_file_types(self):
         error_regex = re.compile ('\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+ (Finest|Finer|Fine|Debug|Config|Info|Notice|Warning|Error|Critical|Alert|Emergency): ')
         access_regex = re.compile ('\S+\s\S+\s\S+\s\[\d+/\w+/\d\d\d\d:\d\d:\d\d:\d\d.*HTTP')
         
-        for key, files in self.files.items():
-            for file in files:
-                if file.type != 'file': continue
-                with open(file.path, 'r', encoding='UTF-8') as afile:
-                    lines = 0
-                    try:
-                        while (line := afile.readline().rstrip()):
-                            if lines > 5:
+        for key, file in self.files.items():
+            if file.type != 'file': continue
+            with open(file.path, 'r', encoding='UTF-8') as afile:
+                lines = 0
+                try:
+                    while (line := afile.readline().rstrip()):
+                        if lines > 5:
+                            break
+                        elif error_regex.match(line):
+                            file.type = 'error'
+                            break
+                        elif access_regex.match(line):
+                            file.type = 'access'
+                            break
+                        else:
+                            try:
+                                s = json.loads (line)
+                                if 'time' in s: file.type = 'request'
                                 break
-                            elif error_regex.match(line):
-                                file.type = 'error'
-                                break
-                            elif access_regex.match(line):
-                                file.type = 'access'
-                                break
-                            else:
-                                try:
-                                    s = json.loads (line)
-                                    if 'time' in s: file.type = 'request'
-                                    break
-                                except Exception:
-                                    pass
-                            lines += 1
-                    except Exception:
-                        print (f"Bad read in {file.path}, can't determine type.", file=sys.stderr, flush=True)
+                            except Exception:
+                                pass
+                        lines += 1
+                except Exception:
+                    print (f"Bad read in {file.path}, can't determine type.", file=sys.stderr, flush=True)
 
     def read_files(self):
         print ("Reading files", file=sys.stderr, flush=True)
-        for key, files in self.files.items():
-            for file in files:
-                if file.type == 'request':
-                    self.read_request_file (file)
-                elif file.type == 'access':
-                    self.read_access_file (file)
-                elif file.type == 'error':
-                    self.read_error_file (file)
+        for key, file in self.files.items():
+            if file.type == 'request':
+                self.read_request_file (file)
+            elif file.type == 'access':
+                self.read_access_file (file)
+            elif file.type == 'error':
+                self.read_error_file (file)
         # just keep the keys
         self.columns = sorted(self.columns.keys(), key=self.column_order)
 
@@ -131,6 +155,8 @@ class mllogs:
                     vals['event'] = 'request'
                     vals['log-path'] = file.path
                     vals['log-type'] = file.type
+                    if file.port is not None:
+                        vals['port'] = file.port
                     vals['log-line'] = lines_read
                     self.columns.update(vals)   
                     self.data.append(vals)
@@ -156,6 +182,8 @@ class mllogs:
                     # TODO - genericize?
                     # TODO - save timezone?
                     vals = {'log-path': file.path, 'log-type': file.type, 'log-line': lines_read, 'node': file.node, 'text': line}
+                    if file.port is not None:
+                        vals['port'] = file.port
                     for index in range(len(access_columns)):
                         vals[access_columns[index]] = m.group(index+1)
                     vals['datetime'] = f"{int(vals['year']):04d}-{self.months[vals['month']]:02d}-{int(vals['day']):02d}"

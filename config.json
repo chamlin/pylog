@@ -1,0 +1,7 @@
+{
+    "files": [
+        { "node": "2", "path": "testdir/node2-8250_RequestLog_1.txt", "port": 8250 },
+        { "node": "2", "path": "testdir/" },
+        { "path": "node1" }
+    ]
+}

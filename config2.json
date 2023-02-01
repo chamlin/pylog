@@ -1,0 +1,16 @@
+{
+    "files": [
+        { "node": "d01", "path": "all-logs/d01" },
+        { "node": "d02", "path": "all-logs/d02" },
+        { "node": "d03", "path": "all-logs/d03" },
+        { "node": "d04", "path": "all-logs/d04" },
+        { "node": "d05", "path": "all-logs/d05" },
+        { "node": "d06", "path": "all-logs/d06" },
+        { "node": "d07", "path": "all-logs/d07" },
+        { "node": "d08", "path": "all-logs/d08" },
+        { "node": "d09", "path": "all-logs/d09" },
+        { "node": "e01", "path": "all-logs/e01" },
+        { "node": "e02", "path": "all-logs/e02" },
+        { "node": "e03", "path": "all-logs/e03" }
+    ]
+}
