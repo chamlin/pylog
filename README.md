@@ -31,6 +31,10 @@ script to run the tests in lineparse.py
 
 # files
 
+## test.ipynb, stats-all
+
+jupyter, using the old logalyzer output (stats-all), playing around with some plotting
+
 ## config.json, config2.json
 
 example config files; fix for your data
