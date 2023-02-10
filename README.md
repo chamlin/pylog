@@ -13,7 +13,7 @@ Also some basic plots and extracts.
 
 ## filetest.py
 
-main test file.
+main test file; run for options
 
 Extracts to stdout, errors/warnings to stderr
 
