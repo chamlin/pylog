@@ -17,7 +17,7 @@ def mergingfun (line):
         return retval
 
 def memfun (line):
-    retval = {'event': 'memory'}
+    retval = {'event': 'memory-logging'}
     extracted = False
     for stat in re.findall (r'(\w+)=(\d+)\((\d+)%\)', line):
         name = stat[0]
