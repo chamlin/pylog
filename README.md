@@ -25,6 +25,16 @@ plot numeric values in a stack, per node
 
 module for error-log parsing
 
+## test-lineparse.py
+
+script to run the tests in lineparse.py
+
+# files
+
+## config.json, config2.json
+
+example config files; fix for your data
+
 ## test-lineparse.py, test-lineparse.out
 
-script to run the tests in lineparse.py and the expected output
+expected output of test-lineparse.py

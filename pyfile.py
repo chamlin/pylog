@@ -25,6 +25,7 @@ class mllog:
 class mllogs:
 
     def __init__(self, config):
+        print (f'config in: {config}.', file=sys.stderr, flush=True)
         self.config = config
         self.files = {}
         self.data = []
@@ -34,9 +35,10 @@ class mllogs:
         # do some init stuff
         self.column_order = self.init_leading_columns(['datetime', 'node', 'event', 'log-type', 'level'])
         # do some stuff
-        self.parse_file_config (config)
+        self.parse_file_config (config['config']['files'])
         self.detect_file_types ()
         self.get_port_numbers ()
+        print (f'my config: {self.config}.', file=sys.stderr, flush=True)
 
 
     def __str__(self):
@@ -56,9 +58,9 @@ class mllogs:
         return lambda colname: column_ratings.get(colname, colname)
 
     def parse_file_config (self, config):
-        print ('config: ', self.config['files'], file=sys.stderr, flush=True)
+        print ('file configs: ', self.config['config']['files'], file=sys.stderr, flush=True)
         # set up basic
-        for config in self.config['files']:
+        for config in self.config['config']['files']:
             if not 'node' in config:  config['node'] = 'X'
             paths = config['path'].split(',')
             node = config['node']
@@ -158,11 +160,13 @@ class mllogs:
                     if file.port is not None:
                         vals['port'] = file.port
                     vals['log-line'] = lines_read
+                    #print (f"self.config['text']:  #{self.config['text']}.", file=sys.stderr, flush=True)
+                    if self.config['args']['text'] == 'true': vals['text'] = line 
                     self.columns.update(vals)   
                     self.data.append(vals)
-                except Exception:
+                except Exception as e:
                     lines_bad += 1
-                    print(f"Bad line from request file {file.path}: " + line,  file=sys.stderr, flush=True)
+                    print (f"Error in parse of line in {file.path} #{line}: {e}.", file=sys.stderr, flush=True)
         file.lines_read = lines_read
         file.lines_bad = lines_bad
 
@@ -181,7 +185,8 @@ class mllogs:
                     m = access_regex.match(line)
                     # TODO - genericize?
                     # TODO - save timezone?
-                    vals = {'log-path': file.path, 'log-type': file.type, 'log-line': lines_read, 'node': file.node, 'text': line}
+                    vals = {'log-path': file.path, 'log-type': file.type, 'log-line': lines_read, 'node': file.node}
+                    if self.config['args']['text'] == 'true': vals['text'] = line 
                     if file.port is not None:
                         vals['port'] = file.port
                     for index in range(len(access_columns)):
@@ -230,11 +235,17 @@ class mllogs:
             m = prefix_regex.match(line)
             text = m.group('text')
             # TODO - genericize?
-            vals = {'log-path': file.path, 'log-type': file.type, 'log-line': line_number, 'datetime': m.group('datetime'), 'node': file.node, 'level': m.group('level'), 'text': text}
+            vals = {'log-path': file.path, 'log-type': file.type, 'log-line': line_number, 'datetime': m.group('datetime'), 'node': file.node, 'level': m.group('level')}
+            if self.config['args']['text'] == 'true': vals['text'] = text
             # OK here?
-            for event in lineparse.extract_events(text):
-                event.update (vals)
-                retval.append (event)
+            events = lineparse.extract_events(text)
+            if len(events) == 0:
+                vals['event'] = 'unknown'
+                retval.append (vals)
+            else:
+                for event in events:
+                    event.update (vals)
+                    retval.append (event)
         except Exception as e:
             # TODO Avoid error when continued line as   Bad line from access file testdir/TaskServer_ErrorLog_6.txt, #15: 2022-12-06 10:36:52.768 Notice:+in /log.xqy, at 7:10 [1.0-ml]
             print (f"Error in classification of line in {file.path} #{line_number}: {e}", file=sys.stderr, flush=True)
