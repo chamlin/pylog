@@ -4,6 +4,13 @@ import re
 
 # individual functions here for extraction
 
+def shorten_stand (stand_path):
+    parts = stand_path.split ('/')
+    if len(parts) > 1:
+        return parts[-2] + '/' + parts[-1]
+    else:
+        return stand_path
+
 # returns multiple events, one for each stand mentioned
 def mergingfun (line):
     retval = list()
@@ -11,9 +18,9 @@ def mergingfun (line):
     if len(groups) < 4:
         return list()
     else:
-        retval.append ({'event': 'merge-to', 'stand': groups[2], 'size': groups[0], 'timestamp': groups[3]})
+        retval.append ({'event': 'merging-to', 'stand': shorten_stand(groups[2]), 'size': groups[0], 'timestamp': groups[3]})
         for stand in re.split ('(?:, | and )', groups[1]):
-            retval.append ({'event': 'merge-from', 'stand': stand})
+            retval.append ({'event': 'merging-from', 'stand': shorten_stand(stand)})
         return retval
 
 def memfun (line):
@@ -76,18 +83,19 @@ extract_config = {
     'D': [
         { 'starts': 'Deleted ',
           'general-extract': {'init': {'event': 'stand-deleted'}, 'names': ['size', 'rate', 'stand'], 'regex': 'Deleted (\d+) MB at (\d+) MB/sec (.*)'},
-          'tests': ['Deleted 25 MB at 7066 MB/sec /var/opt/MarkLogic/Forests/Meters/00004222']
+          'tests': ['Deleted 25 MB at 7066 MB/sec /var/opt/MarkLogic/Forests/Meters/00004222'],
+          'post-process': {'stand': shorten_stand}
         }
     ],
     'F': [
         # TODO extract %s?,   is this the right event name?
         { 'starts': 'Forest::insert: ',
-          'general-extract': {'init': {'event': 'forest-insert'}, 'names': ['stand', 'code'], 'regex': 'Forest::insert: (\S+) (XDMP-.+?FULL): '},
+          'general-extract': {'init': {'event': 'in-memory-full'}, 'names': ['forest', 'code'], 'regex': 'Forest::insert: (\S+) (XDMP-.+?FULL): '},
           'tests': ['Forest::insert: Meters XDMP-INMMTRPLFULL: In-memory triple storage full; list: table=6%, wordsused=7%, wordsfree=91%, overhead=2%; tree: table=1%, wordsused=15%, wordsfree=85%, overhead=0%']
         },
         # TODO extract %s?,   is this the right event name?
         { 'starts': 'Forest::doInsert: ',
-          'general-extract': {'init': {'event': 'forest-insert'}, 'names': ['code'], 'regex': 'Forest::doInsert: (XDMP-.+?FULL): '},
+          'general-extract': {'init': {'event': 'in-memory-full'}, 'names': ['code'], 'regex': 'Forest::doInsert: (XDMP-.+?FULL): '},
           'tests': ['Forest::doInsert: XDMP-INMMTREEFULL: In-memory tree storage full; list: table=1%, wordsused=30%, wordsfree=68%, overhead=2%; tree: table=16%, wordsused=100%, wordsfree=0%, overhead=0%']
         }
     ],
@@ -176,6 +184,10 @@ def extract_events (line):
                 params = extracter.get('general-extract')
                 extract = generalfun(params['init'], line, params['regex'], params['names'])
             #extract = exfun(line)
+            if extract and 'post-process' in extracter:
+                for event in extract:
+                    for name in extracter.get('post-process'):
+                        event[name] = extracter['post-process'][name](event[name])
             # TODO stop if continue false and match?
             if extract:
                 retval += extract
