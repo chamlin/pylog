@@ -163,6 +163,10 @@ extract_config = {
           'general-extract': {'init': {'event': 'saved-stand'}, 'names': ['size', 'rate', 'stand'], 'regex': 'Saved (\d+) MB(?: in \d+ sec)? at (\d+) MB/sec to (.*)'},
           'tests': ['Saved 10 MB at 119 MB/sec to /var/opt/MarkLogic/Forests/rddr-content-1/00003c61'],
           'post-process': {'stand': [shorten_stand]}
+        },
+        { 'starts': 'Slow ',
+          'literal-extract': [{'event': 'slow-message'}],
+          'tests': ['Slow fsync /mnt/mldata/Forests/careempower-app-content-1/Label, 1.775 KB in 1.002 sec']
         }
     ]
 }
@@ -186,7 +190,9 @@ def extract_events (line):
     retval = list()
     for extracter in extract_config.get (line[0], []):
         if line.startswith (extracter.get('starts', 'dOnTmAtCh')):
-            if 'extract' in extracter:
+            if 'literal-extract' in extracter:
+                extract = extracter['literal-extract']
+            elif 'extract' in extracter:
                 extract = extracter.get('extract')(line)
             else:
                 params = extracter.get('general-extract')

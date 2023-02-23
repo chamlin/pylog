@@ -69,6 +69,9 @@ Saving /var/opt/MarkLogic/Forests/rddr-content-1/00003c5b
 Saved 10 MB at 119 MB/sec to /var/opt/MarkLogic/Forests/rddr-content-1/00003c61
 {'event': 'saved-stand', 'size': '10', 'rate': '119', 'stand': 'rddr-content-1/00003c61'}
 
+Slow fsync /mnt/mldata/Forests/careempower-app-content-1/Label, 1.775 KB in 1.002 sec
+{'event': 'slow-message'}
+
 
 Starting with "[":
 
