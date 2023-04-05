@@ -25,20 +25,21 @@ class mllog:
 class mllogs:
 
     def __init__(self, config):
-        print (f'config in: {config}.', file=sys.stderr, flush=True)
-        self.config = config
+        # yeah, dump here, config starts containing args and parsed config
+        self.config = config['config']
+        if 'config' in self.config['debug']:  print (f'config in: {config}.', file=sys.stderr, flush=True)
         self.files = {}
         self.data = []
         self.columns = {}
         self.months = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12}
+        if not 'line-limit' in self.config:  self.config['line-limit'] = sys.maxsize;
 
         # do some init stuff
         self.column_order = self.init_leading_columns(['datetime', 'node', 'event', 'log-type', 'level'])
         # do some stuff
-        self.parse_file_config (config['config']['files'])
+        self.parse_file_config (self.config['files'])
         self.detect_file_types ()
         self.get_port_numbers ()
-        print (f'my config: {self.config}.', file=sys.stderr, flush=True)
 
 
     def __str__(self):
@@ -58,9 +59,9 @@ class mllogs:
         return lambda colname: column_ratings.get(colname, colname)
 
     def parse_file_config (self, config):
-        print ('file configs: ', self.config['config']['files'], file=sys.stderr, flush=True)
+        #print ('file configs: ', self.config['config']['files'], file=sys.stderr, flush=True)
         # set up basic
-        for config in self.config['config']['files']:
+        for config in self.config['files']:
             if not 'node' in config:  config['node'] = 'X'
             paths = config['path'].split(',')
             node = config['node']
@@ -220,7 +221,7 @@ class mllogs:
                 else:
                     print(f"Couldn't classify line from file {file.path}, #{lines_read}: " + line,  file=sys.stderr, flush=True)
                     lines_bad += 1
-                if lines_read > 100:
+                if self.config['line-limit'] <= lines_read:
                     break
         file.lines_read = lines_read
         file.lines_bad = lines_bad
@@ -238,7 +239,7 @@ class mllogs:
             vals = {'log-path': file.path, 'log-type': file.type, 'log-line': line_number, 'datetime': m.group('datetime'), 'node': file.node, 'level': m.group('level')}
             if self.config['args']['text'] == 'true': vals['text'] = text
             # OK here?
-            events = lineparse.extract_events(config, text)
+            events = lineparse.extract_events(self.config, text)
             if len(events) == 0:
                 vals['event'] = 'unknown'
                 retval.append (vals)
