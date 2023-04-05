@@ -27,11 +27,12 @@ class mllogs:
     def __init__(self, config):
         # yeah, dump here, config starts containing args and parsed config
         self.config = config['config']
-        if 'config' in self.config['debug']:  print (f'config in: {config}.', file=sys.stderr, flush=True)
+        if self.am_debugging('config'):  print (f'config in: {config}.', file=sys.stderr, flush=True)
         self.files = {}
         self.data = []
         self.columns = {}
         self.months = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12}
+        # defaults here
         if not 'line-limit' in self.config:  self.config['line-limit'] = sys.maxsize;
 
         # do some init stuff
@@ -48,6 +49,9 @@ class mllogs:
         for key in self.files:
             s += f"{key}:     " + str (self.files[key]) + "\n"
         return s
+
+    def am_debugging (self, option):
+        return option in self.config['debug']
 
     def read_data (self):
         self.read_files ()
@@ -133,7 +137,7 @@ class mllogs:
                     print (f"Bad read in {file.path}, can't determine type.", file=sys.stderr, flush=True)
 
     def read_files(self):
-        print ("Reading files", file=sys.stderr, flush=True)
+        if self.am_debugging('file-reads'):  print ("Reading files", file=sys.stderr, flush=True)
         for key, file in self.files.items():
             if file.type == 'request':
                 self.read_request_file (file)
@@ -208,7 +212,7 @@ class mllogs:
 
     def read_error_file (self, file):
 
-        print ("> " + file.path, file=sys.stderr, flush=True)
+        if self.am_debugging('file-reads'):  print ("> " + file.path, file=sys.stderr, flush=True)
         with open(file.path, 'r', encoding='UTF-8') as request_file:
             lines_read, lines_bad = [0, 0]
             while (line := request_file.readline().rstrip()):
@@ -221,11 +225,11 @@ class mllogs:
                 else:
                     print(f"Couldn't classify line from file {file.path}, #{lines_read}: " + line,  file=sys.stderr, flush=True)
                     lines_bad += 1
-                if self.config['line-limit'] <= lines_read:
+                if lines_read >= self.config['line-limit']:
                     break
         file.lines_read = lines_read
         file.lines_bad = lines_bad
-        print ("< " + file.path, file=sys.stderr, flush=True)
+        if self.am_debugging('file-reads'):  print ("< " + file.path, file=sys.stderr, flush=True)
 
     def classify_error_line (self, file, line, line_number):
         prefix_regex = re.compile ('(?P<datetime>\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+) (?P<level>\S+):\s(?P<text>.*)')
@@ -249,7 +253,8 @@ class mllogs:
                     retval.append (event)
         except Exception as e:
             # TODO Avoid error when continued line as   Bad line from access file testdir/TaskServer_ErrorLog_6.txt, #15: 2022-12-06 10:36:52.768 Notice:+in /log.xqy, at 7:10 [1.0-ml]
-            print (f"Error in classification of line in {file.path} #{line_number}: {e}", file=sys.stderr, flush=True)
+            if self.am_debugging('unclassified'):
+                print (f"Error in classification of line in {file.path} #{line_number}: {e}", file=sys.stderr, flush=True)
 
         return retval
 
