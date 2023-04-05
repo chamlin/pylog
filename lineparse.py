@@ -1,5 +1,6 @@
 import sys
 import re
+import json
 
 
 # individual functions here for extraction
@@ -131,7 +132,7 @@ extract_config = {
           'post-process': {'stand': [shorten_stand]}
         },
         { 'starts': 'Merging ',
-          'extract': mergingfun,
+          'general-extract': {'init': {'event': 'merging'}, 'names': ['size', 'stand', 'timestamp'], 'regex': 'Merging (\d+) MB from .* to (.*), timestamp=(\d+)'},
           'tests': [
             'Merging 83 MB from /var/opt/MarkLogic/Forests/Meters/00004197, /var/opt/MarkLogic/Forests/Meters/00004198, and /var/opt/MarkLogic/Forests/Meters/00004196 to /var/opt/MarkLogic/Forests/Meters/0000419a, timestamp=16488943209770340',
             'Merging 37 MB from /var/opt/MarkLogic/Forests/Meters/00004182 and /var/opt/MarkLogic/Forests/Meters/00004180 to /var/opt/MarkLogic/Forests/Meters/00004184, timestamp=16488943209770340'
@@ -168,12 +169,18 @@ extract_config = {
           'literal-extract': [{'event': 'slow-message'}],
           'tests': ['Slow fsync /mnt/mldata/Forests/careempower-app-content-1/Label, 1.775 KB in 1.002 sec']
         }
+    ],
+    '*': [
+        { 'matches': 'Telemetry',
+          'literal-extract': [{'event': 'telemetry'}],
+          'tests': ['Uploaded 1 records, 1 MB of Usage Data to Telemetry']
+        }
     ]
 }
 
 # master blaster, using configs
 
-def extract_events (line):
+def extract_events (config, line):
     '''
     Extracts event info from the text of an ErrorLog line
 
@@ -188,23 +195,32 @@ def extract_events (line):
     A list of dictionaries, with event and some other value(s)
     ''' 
     retval = list()
-    for extracter in extract_config.get (line[0], []):
-        if line.startswith (extracter.get('starts', 'dOnTmAtCh')):
-            if 'literal-extract' in extracter:
-                extract = extracter['literal-extract']
-            elif 'extract' in extracter:
-                extract = extracter.get('extract')(line)
+    # try for starting letter or general ones
+    extractors = extract_config.get (line[0], []) + extract_config.get ('*', [])
+    for extractor in extractors:
+        starts = extractor.get('starts', '*dOnTsTaRt*')
+        matches = re.compile(extractor.get('matches', '@dOnTmAtCh@'))
+        print(f'checking extractor: starts="{starts}" matches="{matches}"')
+        if line.startswith (starts) or matches.findall (line):
+            print(f'firing extractor: starts="{starts}" matches="{matches}"')
+            # do the extract
+            if 'literal-extract' in extractor:
+                extract = extractor['literal-extract']
+            elif 'extract' in extractor:  
+                extract = extractor.get('extract')(line)
             else:
-                params = extracter.get('general-extract')
+                params = extractor.get('general-extract')
                 extract = generalfun(params['init'], line, params['regex'], params['names'])
             #extract = exfun(line)
-            if extract and 'post-process' in extracter:
+            if extract and 'post-process' in extractor:
                 for event in extract:
-                    for name in extracter.get('post-process'):
-                        for processor in extracter['post-process'][name]:
+                    for name in extractor.get('post-process'):
+                        for processor in extractor['post-process'][name]:
                             event[name] = processor(event[name])
             # TODO stop if continue false and match?
             if extract:
                 retval += extract
+                # TODO for now, just stop
+                break
     return retval
 
