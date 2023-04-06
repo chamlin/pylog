@@ -180,7 +180,7 @@ extract_config = {
 
 # master blaster, using extractors
 
-def extract_events (config, line):
+def extract_events (debug, line):
     '''
     Extracts event info from the text of an ErrorLog line
 
@@ -200,9 +200,9 @@ def extract_events (config, line):
     for extractor in extractors:
         starts = extractor.get('starts', '*dOnTsTaRt*')
         matches = re.compile(extractor.get('matches', '@dOnTmAtCh@'))
-        print(f'checking extractor: starts="{starts}" matches="{matches}"')
+        if debug:  print(f'checking extractor: starts="{starts}" matches="{matches}"')
         if line.startswith (starts) or matches.findall (line):
-            print(f'firing extractor: starts="{starts}" matches="{matches}"')
+            if debug:  print(f'firing extractor: starts="{starts}" matches="{matches}"')
             # do the extract
             if 'literal-extract' in extractor:
                 extract = extractor['literal-extract']
@@ -220,6 +220,7 @@ def extract_events (config, line):
             # TODO stop if continue false and match?
             if extract:
                 retval += extract
+                if debug:  print(f'extracted: {extract}.')
                 # TODO for now, just stop
                 break
     return retval

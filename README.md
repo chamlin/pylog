@@ -69,8 +69,9 @@ limit for number of lines to read from a file.  default is sys.maxsize.
 
 - config:  config dumped before run
 - file-reads:  files read
+- file-stats:  overall stats on input files
 - unclassified:  unclassified lines
-- extract:  extraction
+- extract:  extraction debugging
 
 
 ## test-lineparse.py, test-lineparse.out

@@ -244,7 +244,7 @@ class mllogs:
             vals = {'log-path': file.path, 'log-type': file.type, 'log-line': line_number, 'datetime': m.group('datetime'), 'node': file.node, 'level': m.group('level')}
             if self.config['text']: vals['text'] = text
             # OK here?
-            events = lineparse.extract_events(self.config, text)
+            events = lineparse.extract_events(self.am_debugging('extract'), text)
             if len(events) == 0:
                 vals['event'] = 'unknown'
                 retval.append (vals)
