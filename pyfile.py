@@ -247,6 +247,8 @@ class mllogs:
             events = lineparse.extract_events(self.am_debugging('extract'), text)
             if len(events) == 0:
                 vals['event'] = 'unknown'
+                if self.am_debugging('unclassified'):
+                    print (f'Unclassified line: {line}.', file=sys.stderr, flush=True)
                 retval.append (vals)
             else:
                 for event in events:

@@ -12,6 +12,9 @@ def shorten_stand (stand_path):
     else:
         return stand_path
 
+def general_trace_event (event_name):
+    return 'trace-' + event_name.lower().replace(' ', '-')
+
 # returns multiple events, one for each stand mentioned
 def mergingfun (line):
     retval = list()
@@ -81,6 +84,11 @@ extract_config = {
         { 'starts': '[Event:id=Reindexer Trace]',
           'general-extract': {'init': {'event': 'reindexer'}, 'names': ['reason', 'fragments', 'duration', 'rate', 'forest'], 'regex': '.*Refragmented (.+) (\d+) fragments in (\d+) sec at (\d+) .* forest (.*)'},
           'tests': ['[Event:id=Reindexer Trace] Refragmented new fields 10002 fragments in 58 sec at 171 fragments/sec on forest P_initial_p25_01']
+        },
+        { 'starts': '[Event:id=',
+          'general-extract': {'init': {}, 'names': ['event'], 'regex': 'Event:id=([^]]+)'},
+          'tests': ['[Event:id=General Name] Just a test of the general fallback trace event extraction'],
+          'post-process': {'event': [general_trace_event]}
         }
     ],
     'D': [
@@ -200,9 +208,9 @@ def extract_events (debug, line):
     for extractor in extractors:
         starts = extractor.get('starts', '*dOnTsTaRt*')
         matches = re.compile(extractor.get('matches', '@dOnTmAtCh@'))
-        if debug:  print(f'checking extractor: starts="{starts}" matches="{matches}"')
+        if debug:  print(f'checking extractor: starts="{starts}" matches="{matches}"', file=sys.stderr, flush=True)
         if line.startswith (starts) or matches.findall (line):
-            if debug:  print(f'firing extractor: starts="{starts}" matches="{matches}"')
+            if debug:  print(f'firing extractor: starts="{starts}" matches="{matches}"', file=sys.stderr, flush=True)
             # do the extract
             if 'literal-extract' in extractor:
                 extract = extractor['literal-extract']
@@ -220,7 +228,7 @@ def extract_events (debug, line):
             # TODO stop if continue false and match?
             if extract:
                 retval += extract
-                if debug:  print(f'extracted: {extract}.')
+                if debug:  print(f'extracted: {extract}.', file=sys.stderr, flush=True)
                 # TODO for now, just stop
                 break
     return retval
