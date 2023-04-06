@@ -31,6 +31,10 @@ script to run the tests in lineparse.py
 
 # files
 
+## test-lineparse.out
+
+expected output of test-lineparse.py
+
 ## examples.ipynb
 
 jupyter, basic manipulations of the data
@@ -73,7 +77,4 @@ limit for number of lines to read from a file.  default is sys.maxsize.
 - unclassified:  unclassified lines
 - extract:  extraction debugging
 
-
-## test-lineparse.py, test-lineparse.out
-
-expected output of test-lineparse.py
+output shoud go to stderr
