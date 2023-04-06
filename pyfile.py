@@ -34,6 +34,7 @@ class mllogs:
         self.months = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12}
         # defaults here
         if not 'line-limit' in self.config:  self.config['line-limit'] = sys.maxsize;
+        if not 'text' in self.config:  self.config['text'] = False;
 
         # do some init stuff
         self.column_order = self.init_leading_columns(['datetime', 'node', 'event', 'log-type', 'level'])
@@ -223,7 +224,7 @@ class mllogs:
                         self.data.append(row)
                         self.columns.update(row)
                 else:
-                    print(f"Couldn't classify line from file {file.path}, #{lines_read}: " + line,  file=sys.stderr, flush=True)
+                    if self.am_debugging ('unclassified'):  print(f"Couldn't classify line from file {file.path}, #{lines_read}: " + line,  file=sys.stderr, flush=True)
                     lines_bad += 1
                 if lines_read >= self.config['line-limit']:
                     break
@@ -241,7 +242,7 @@ class mllogs:
             text = m.group('text')
             # TODO - genericize?
             vals = {'log-path': file.path, 'log-type': file.type, 'log-line': line_number, 'datetime': m.group('datetime'), 'node': file.node, 'level': m.group('level')}
-            if self.config['args']['text'] == 'true': vals['text'] = text
+            if self.config['text']: vals['text'] = text
             # OK here?
             events = lineparse.extract_events(self.config, text)
             if len(events) == 0:

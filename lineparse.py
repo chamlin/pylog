@@ -178,7 +178,7 @@ extract_config = {
     ]
 }
 
-# master blaster, using configs
+# master blaster, using extractors
 
 def extract_events (config, line):
     '''

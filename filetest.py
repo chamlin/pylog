@@ -23,6 +23,7 @@ logs = log.mllogs (config)
 logs.read_data()
 logs.dump_data()
 
-print ("\n\nfile stats:\n", file=sys.stderr, flush=True)
-print (logs, file=sys.stderr, flush=True)
+if logs.am_debugging ('file-stats'):
+        print ("\n\nfile stats:\n", file=sys.stderr, flush=True)
+        print (logs, file=sys.stderr, flush=True)
 
