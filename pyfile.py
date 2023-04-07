@@ -181,6 +181,9 @@ class mllogs:
         access_regex = re.compile ('(\S+)\s(\S+)\s(\S+)\s\[(\d+)/(\w+)/(\d\d\d\d):(\d\d):(\d\d):(\d\d) ([^]]+)\] "(\w+) (\S+) (\S+)" (\d+) (\S+) (\S+) "([^"]+)"')
         access_columns = ('ip', 'thing', 'user', 'day', 'month', 'year', 'hour', 'minute', 'second', 'timezone', 'method', 'URL', 'protocol', 'response', 'bytes', 'referrer', 'client')
         access_columns_dropped = ('day', 'month', 'year', 'hour', 'minute', 'second', 'timezone')
+        external_user_regex = re.compile ('External User\((.*)\) is Mapped to Temp User\((.*)\) with Role\(s\): (.*)')
+        external_user_columns = ('external-user', 'temp-user', 'user-roles')
+        queued_external_auth_lines = list()
 
         if self.am_debugging('file-reads'):  print ("> " + file.path, file=sys.stderr, flush=True)
         with open(file.path, 'r', encoding='UTF-8') as request_file:
@@ -190,26 +193,43 @@ class mllogs:
                 if lines_read >= self.config['line-limit']:
                     break
                 try:
-                    m = access_regex.match(line)
-                    # TODO - genericize?
-                    # TODO - save timezone?
                     vals = {'log-path': file.path, 'log-type': file.type, 'log-line': lines_read, 'node': file.node}
                     if self.config['text']: vals['text'] = line
-                    if file.port is not None:
-                        vals['port'] = file.port
-                    for index in range(len(access_columns)):
-                        vals[access_columns[index]] = m.group(index+1)
-                    vals['datetime'] = f"{int(vals['year']):04d}-{self.months[vals['month']]:02d}-{int(vals['day']):02d}"
-                    vals['datetime'] += f" {int(vals['hour']):02d}:{int(vals['minute']):02d}:{int(vals['second']):02d}"
-                    vals['event'] = 'access'
-                    for dropped_column in access_columns_dropped:
-                        vals.pop(dropped_column)
-                    self.columns.update(vals)   
-                    self.data.append(vals)
+                    if file.port is not None: vals['port'] = file.port
+                    m = access_regex.match(line)
+                    if m is not None:
+                        # TODO - genericize?
+                        # TODO - save timezone?
+                        vals['event'] = 'access'
+                        for index in range(len(access_columns)):
+                            vals[access_columns[index]] = m.group(index+1)
+                        vals['datetime'] = f"{int(vals['year']):04d}-{self.months[vals['month']]:02d}-{int(vals['day']):02d}"
+                        vals['datetime'] += f" {int(vals['hour']):02d}:{int(vals['minute']):02d}:{int(vals['second']):02d}"
+                        for dropped_column in access_columns_dropped:
+                            vals.pop(dropped_column)
+                        self.columns.update(vals)   
+                        self.data.append(vals)
+                        # have a datetime so clear out any queued external auth lines
+                        for queued in queued_external_auth_lines:
+                            queued['datetime'] = vals['datetime']
+                            self.columns.update(queued)   
+                            self.data.append(queued)
+                        queued_external_auth_lines = list()
+                    else:
+                        m = external_user_regex.match(line)
+                        vals['event'] = 'external-auth'
+                        if m is not None:
+                            for index in range(len(external_user_columns)):
+                                vals[external_user_columns[index]] = m.group(index+1)
+                            queued_external_auth_lines.append(vals)
+                        else:
+                            lines_bad += 1
+                            if self.am_debugging ('unclassified'):
+                                print (f"Unclassified line from access file {file.path}: " + line,  file=sys.stderr, flush=True)
                 except Exception as oops:
                     lines_bad += 1
                     if self.am_debugging ('unclassified'):
-                        print (f"Bad line from access file {file.path}: " + line,  file=sys.stderr, flush=True)
+                        print (f"Error on line from access file {file.path}: " + line,  file=sys.stderr, flush=True)
                         print (oops, file=sys.stderr, flush=True)
         file.lines_read = lines_read
         file.lines_bad = lines_bad
