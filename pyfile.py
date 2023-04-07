@@ -118,7 +118,7 @@ class mllogs:
                 lines = 0
                 try:
                     while (line := afile.readline().rstrip()):
-                        if lines > 5:
+                        if lines > 10:
                             break
                         elif error_regex.match(line):
                             file.type = 'error'
@@ -150,7 +150,7 @@ class mllogs:
         self.columns = sorted(self.columns.keys(), key=self.column_order)
 
     def read_request_file (self, file):
-        print ("- " + file.path, file=sys.stderr, flush=True)
+        if self.am_debugging('file-reads'):  print ("> " + file.path, file=sys.stderr, flush=True)
         with open(file.path, 'r', encoding='UTF-8') as request_file:
             lines_read, lines_bad = [0, 0]
             while (line := request_file.readline().rstrip()):
@@ -166,15 +166,15 @@ class mllogs:
                     if file.port is not None:
                         vals['port'] = file.port
                     vals['log-line'] = lines_read
-                    #print (f"self.config['text']:  #{self.config['text']}.", file=sys.stderr, flush=True)
-                    if self.config['args']['text'] == 'true': vals['text'] = line 
+                    if self.config['text']: vals['text'] = line
                     self.columns.update(vals)   
                     self.data.append(vals)
                 except Exception as e:
                     lines_bad += 1
-                    print (f"Error in parse of line in {file.path} #{line}: {e}.", file=sys.stderr, flush=True)
+                    if self.am_debugging ('unclassified'):  print (f"Error in parse of line in {file.path} #{line}: {e}.", file=sys.stderr, flush=True)
         file.lines_read = lines_read
         file.lines_bad = lines_bad
+        if self.am_debugging('file-reads'):  print ("< " + file.path, file=sys.stderr, flush=True)
 
 
     def read_access_file (self, file):
@@ -182,17 +182,19 @@ class mllogs:
         access_columns = ('ip', 'thing', 'user', 'day', 'month', 'year', 'hour', 'minute', 'second', 'timezone', 'method', 'URL', 'protocol', 'response', 'bytes', 'referrer', 'client')
         access_columns_dropped = ('day', 'month', 'year', 'hour', 'minute', 'second', 'timezone')
 
-        print ("- " + file.path, file=sys.stderr, flush=True)
+        if self.am_debugging('file-reads'):  print ("> " + file.path, file=sys.stderr, flush=True)
         with open(file.path, 'r', encoding='UTF-8') as request_file:
             lines_read, lines_bad = [0, 0]
             while (line := request_file.readline().rstrip()):
                 lines_read += 1
+                if lines_read >= self.config['line-limit']:
+                    break
                 try:
                     m = access_regex.match(line)
                     # TODO - genericize?
                     # TODO - save timezone?
                     vals = {'log-path': file.path, 'log-type': file.type, 'log-line': lines_read, 'node': file.node}
-                    if self.config['args']['text'] == 'true': vals['text'] = line 
+                    if self.config['text']: vals['text'] = line
                     if file.port is not None:
                         vals['port'] = file.port
                     for index in range(len(access_columns)):
@@ -206,10 +208,12 @@ class mllogs:
                     self.data.append(vals)
                 except Exception as oops:
                     lines_bad += 1
-                    print(f"Bad line from access file {file.path}: " + line,  file=sys.stderr, flush=True)
-                    print (oops, file=sys.stderr, flush=True)
+                    if self.am_debugging ('unclassified'):
+                        print (f"Bad line from access file {file.path}: " + line,  file=sys.stderr, flush=True)
+                        print (oops, file=sys.stderr, flush=True)
         file.lines_read = lines_read
         file.lines_bad = lines_bad
+        if self.am_debugging('file-reads'):  print ("< " + file.path, file=sys.stderr, flush=True)
 
     def read_error_file (self, file):
 
