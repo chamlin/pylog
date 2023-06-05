@@ -52,7 +52,10 @@ class mllogs:
         return s
 
     def am_debugging (self, option):
-        return option in self.config['debug']
+        if 'debug' in self.config:
+            return option in self.config['debug']
+        else:
+            return False
 
     def read_data (self):
         self.read_files ()
