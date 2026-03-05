@@ -25,24 +25,39 @@ class mllog:
 
 class mllogs:
 
-    def __init__(self, config):
-        # yeah, dump here, config starts containing args and parsed config
-        self.config = config['config']
-        if self.am_debugging('config'):  print (f'config in: {config}.', file=sys.stderr, flush=True)
+    #def __init__(self, state):
+    def __init__(self, args, config):
+        # state starts containing command-line args and parsed config
+        self.state = {'args': args, 'config': config}
+        state = self.state
+
+        # needs to be there before you can check it
+        state['debug'] = []
+        if   state['args']['debug']:  state['debug'] = state['args']['debug'].split(',')
+
+        if self.am_debugging('init'):  print (f'init out: {state}.', file=sys.stderr, flush=True)
+
+        # defaults here
+        if not 'line-limit' in state:  state['line-limit'] = sys.maxsize;
+
+        if 'text' in state['args']:  state['text'] = True
+        else:  state['text'] = False
+
         self.files = {}
         self.data = []
         self.columns = {}
         self.months = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12}
-        # defaults here
-        if not 'line-limit' in self.config:  self.config['line-limit'] = sys.maxsize;
-        if not 'text' in self.config:  self.config['text'] = False;
 
         # do some init stuff
         self.column_order = self.init_leading_columns(['datetime', 'node', 'event', 'log-type', 'level'])
+
         # do some stuff
-        self.parse_file_config (self.config['files'])
+        self.parse_file_config (self.state['config']['files'])
         self.detect_file_types ()
         self.get_port_numbers ()
+
+        if self.am_debugging('init'):  print (f'init out: {state}.', file=sys.stderr, flush=True)
+        
 
 
     def __str__(self):
@@ -53,10 +68,7 @@ class mllogs:
         return s
 
     def am_debugging (self, option):
-        if 'debug' in self.config:
-            return option in self.config['debug']
-        else:
-            return False
+        return option in self.state['debug']
 
     def read_data (self):
         self.read_files ()
@@ -67,14 +79,14 @@ class mllogs:
             column_ratings[name] = f"!{num:04d}"
         return lambda colname: column_ratings.get(colname, colname)
 
-    def parse_file_config (self, config):
-        #print ('file configs: ', self.config['config']['files'], file=sys.stderr, flush=True)
+    def parse_file_config (self, file_configs):
+        #print ('file configs: ', file_configs, file=sys.stderr, flush=True)
         # set up basic
-        for config in self.config['files']:
-            if not 'node' in config:  config['node'] = 'X'
-            paths = config['path'].split(',')
-            node = config['node']
-            port_given = config.get ('port', None)
+        for file_config in file_configs:
+            if not 'node' in file_config:  file_config['node'] = 'X'
+            paths = file_config['path'].split(',')
+            node = file_config['node']
+            port_given = file_config.get ('port', None)
             for path in paths:
                 path = path.strip()
                 # add then expand if needed
@@ -104,7 +116,7 @@ class mllogs:
             # order dependent
             if file.port is not None: continue
             filename = re.sub ('.*/', '', file.path)
-            port_regex = re.compile ('^(?P<port>\d\d\d\d\d?)_')
+            port_regex = re.compile (r'^(?P<port>\d\d\d\d\d?)_')
             try:
                 m = port_regex.match(filename)
                 port = m.group('port')
@@ -113,8 +125,8 @@ class mllogs:
                 pass
 
     def detect_file_types(self):
-        error_regex = re.compile ('\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+ (Finest|Finer|Fine|Debug|Config|Info|Notice|Warning|Error|Critical|Alert|Emergency): ')
-        access_regex = re.compile ('\S+\s\S+\s\S+\s\[\d+/\w+/\d\d\d\d:\d\d:\d\d:\d\d.*HTTP')
+        error_regex = re.compile (r'\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+ (Finest|Finer|Fine|Debug|Config|Info|Notice|Warning|Error|Critical|Alert|Emergency): ')
+        access_regex = re.compile (r'\S+\s\S+\s\S+\s\[\d+/\w+/\d\d\d\d:\d\d:\d\d:\d\d.*HTTP')
         
         for key, file in self.files.items():
             if file.type != 'file': continue
@@ -154,14 +166,14 @@ class mllogs:
         self.columns = sorted(self.columns.keys(), key=self.column_order)
 
     def read_request_file (self, file):
-        if self.am_debugging('file-reads'):  print ("> " + file.path, file=sys.stderr, flush=True)
+        if self.am_debugging('file-reads'):  print ("req> " + file.path, file=sys.stderr, flush=True)
         with open(file.path, 'r', encoding='UTF-8') as request_file:
             lines_read, lines_bad = [0, 0]
             while (line := request_file.readline().rstrip()):
                 lines_read += 1
                 try:
                     vals = json.loads (line)
-                    vals['datetime'] = re.sub('-\d\d:\d\d','',vals.pop('time'))
+                    vals['datetime'] = re.sub(r'-\d\d:\d\d','',vals.pop('time'))
                     vals['node'] = file.node
                     # TODO - genericize?
                     vals['event'] = 'request'
@@ -178,18 +190,18 @@ class mllogs:
                     if self.am_debugging ('unclassified'):  print (f"Error in parse of line in {file.path} #{line}: {e}.", file=sys.stderr, flush=True)
         file.lines_read = lines_read
         file.lines_bad = lines_bad
-        if self.am_debugging('file-reads'):  print ("< " + file.path, file=sys.stderr, flush=True)
+        if self.am_debugging('file-reads'):  print ("<req " + file.path, file=sys.stderr, flush=True)
 
 
     def read_access_file (self, file):
-        access_regex = re.compile ('(\S+)\s(\S+)\s(\S+)\s\[(\d+)/(\w+)/(\d\d\d\d):(\d\d):(\d\d):(\d\d) ([^]]+)\] "(\w+) (\S+) (\S+)" (\d+) (\S+) (\S+) "([^"]+)"')
+        access_regex = re.compile (r'(\S+)\s(\S+)\s(\S+)\s\[(\d+)/(\w+)/(\d\d\d\d):(\d\d):(\d\d):(\d\d) ([^]]+)\] "(\w+) (\S+) (\S+)" (\d+) (\S+) (\S+) "([^"]+)"')
         access_columns = ('ip', 'thing', 'user', 'day', 'month', 'year', 'hour', 'minute', 'second', 'timezone', 'method', 'URL', 'protocol', 'response', 'bytes', 'referrer', 'client')
         access_columns_dropped = ('day', 'month', 'year', 'hour', 'minute', 'second', 'timezone')
-        external_user_regex = re.compile ('External User\((.*)\) is Mapped to Temp User\((.*)\) with Role\(s\): (.*)')
+        external_user_regex = re.compile (r'External User\((.*)\) is Mapped to Temp User\((.*)\) with Role\(s\): (.*)')
         external_user_columns = ('external-user', 'temp-user', 'user-roles')
         queued_external_auth_lines = list()
 
-        if self.am_debugging('file-reads'):  print ("> " + file.path, file=sys.stderr, flush=True)
+        if self.am_debugging('file-reads'):  print ("acc> " + file.path, file=sys.stderr, flush=True)
         with open(file.path, 'r', encoding='UTF-8') as request_file:
             lines_read, lines_bad = [0, 0]
             while (line := request_file.readline().rstrip()):
@@ -237,11 +249,11 @@ class mllogs:
                         print (oops, file=sys.stderr, flush=True)
         file.lines_read = lines_read
         file.lines_bad = lines_bad
-        if self.am_debugging('file-reads'):  print ("< " + file.path, file=sys.stderr, flush=True)
+        if self.am_debugging('file-reads'):  print ("acc< " + file.path, file=sys.stderr, flush=True)
 
     def read_error_file (self, file):
 
-        if self.am_debugging('file-reads'):  print ("> " + file.path, file=sys.stderr, flush=True)
+        if self.am_debugging('file-reads'):  print ("err> " + file.path, file=sys.stderr, flush=True)
         with open(file.path, 'r', encoding='UTF-8') as request_file:
             lines_read, lines_bad = [0, 0]
             while (line := request_file.readline().rstrip()):
@@ -254,14 +266,14 @@ class mllogs:
                 else:
                     if self.am_debugging ('unclassified'):  print(f"Couldn't classify line from file {file.path}, #{lines_read}: " + line,  file=sys.stderr, flush=True)
                     lines_bad += 1
-                if lines_read >= self.config['line-limit']:
+                if lines_read >= self.state['line-limit']:
                     break
         file.lines_read = lines_read
         file.lines_bad = lines_bad
-        if self.am_debugging('file-reads'):  print ("< " + file.path, file=sys.stderr, flush=True)
+        if self.am_debugging('file-reads'):  print ("err< " + file.path, file=sys.stderr, flush=True)
 
     def classify_error_line (self, file, line, line_number):
-        prefix_regex = re.compile ('(?P<datetime>\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+) (?P<level>\S+):\s(?P<text>.*)')
+        prefix_regex = re.compile (r'(?P<datetime>\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+) (?P<level>\S+):\s(?P<text>.*)')
         # return list of extracted rows.  0 means error or bad line, whatever
         retval = list()
 
@@ -270,7 +282,7 @@ class mllogs:
             text = m.group('text')
             # TODO - genericize?
             vals = {'log-path': file.path, 'log-type': file.type, 'log-line': line_number, 'datetime': m.group('datetime'), 'node': file.node, 'level': m.group('level')}
-            if self.config['text']: vals['text'] = text
+            if self.state['text']: vals['text'] = text
             # OK here?
             events = lineparse.extract_events(self.am_debugging('extract'), text)
             if len(events) == 0:
