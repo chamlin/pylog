@@ -100,6 +100,12 @@ extract_config = {
                 'Closing journal /data/MarkLogic/Forests/gptm-prod-01-f-content-001-2/Jou ...',
           ]
         },
+        { 'starts': 'Creating journal archive',
+          'literal-extract': [{'event': 'journal-archiving'}],
+          'tests': [
+                'Creating journal archive /backup/gptm-prod-01-f-content/20260301-230...',
+          ]
+        },
     ],
     'D': [
         { 'starts': 'Deleted ',
@@ -137,6 +143,10 @@ extract_config = {
         { 'starts': 'Forest::insert: ',
           'general-extract': {'init': {'event': 'in-memory-full'}, 'names': ['forest', 'code'], 'regex': r'Forest::insert: (\S+) (XDMP-.+?FULL): '},
           'tests': ['Forest::insert: Meters XDMP-INMMTRPLFULL: In-memory triple storage full; list: table=6%, wordsused=7%, wordsfree=91%, overhead=2%; tree: table=1%, wordsused=15%, wordsfree=85%, overhead=0%']
+        },
+        { 'starts': 'Forest::doInsert: ',
+          'general-extract': {'init': {'event': 'in-memory-full'}, 'names': ['code'], 'regex': r'Forest::doInsert: (XDMP-.+?FULL): '},
+          'tests': ['Forest::doInsert: XDMP-INMMTREEFULL: In-memory tree storage ...']
         }
     ],
     'I': [
