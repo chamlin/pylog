@@ -40,8 +40,8 @@ class mllogs:
         # defaults here
         if not 'line-limit' in state:  state['line-limit'] = sys.maxsize;
 
-        if 'text' in state['args']:  state['text'] = True
-        else:  state['text'] = False
+        if 'text' in state['args']:  state['save-text'] = True
+        else:  state['save-text'] = False
 
         self.files = {}
         self.data = []
@@ -52,7 +52,7 @@ class mllogs:
         self.column_order = self.init_leading_columns(['datetime', 'node', 'event', 'log-type', 'level'])
 
         # do some stuff
-        self.parse_file_config (self.state['config']['files'])
+        self.parse_file_config (state['config']['files'])
         self.detect_file_types ()
         self.get_port_numbers ()
 
@@ -182,7 +182,7 @@ class mllogs:
                     if file.port is not None:
                         vals['port'] = file.port
                     vals['log-line'] = lines_read
-                    if self.config['text']: vals['text'] = line
+                    if self.state['save-text']: vals['text'] = line
                     self.columns.update(vals)   
                     self.data.append(vals)
                 except Exception as e:
@@ -210,7 +210,7 @@ class mllogs:
                     break
                 try:
                     vals = {'log-path': file.path, 'log-type': file.type, 'log-line': lines_read, 'node': file.node}
-                    if self.config['text']: vals['text'] = line
+                    if self.state['save-text']: vals['text'] = line
                     if file.port is not None: vals['port'] = file.port
                     m = access_regex.match(line)
                     if m is not None:
@@ -282,7 +282,7 @@ class mllogs:
             text = m.group('text')
             # TODO - genericize?
             vals = {'log-path': file.path, 'log-type': file.type, 'log-line': line_number, 'datetime': m.group('datetime'), 'node': file.node, 'level': m.group('level')}
-            if self.state['text']: vals['text'] = text
+            if self.state['save-text']: vals['text'] = text
             # OK here?
             events = lineparse.extract_events(self.am_debugging('extract'), text)
             if len(events) == 0:

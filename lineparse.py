@@ -225,7 +225,13 @@ extract_config = {
         { 'starts': 'Slow ',
           'literal-extract': [{'event': 'slow-message'}],
           'tests': ['Slow fsync /mnt/mldata/Forests/careempower-app-content-1/Label, 1.775 KB in 1.002 sec']
-        }
+        },
+    ],
+    'T': [
+        { 'starts': 'Termlist for ',
+          'general-extract': {'init': {'event': 'termlist'}, 'names': ['size'], 'regex': r'is (\d+) MB;'},
+          'tests': ['Termlist for 11363135516565172648 in /data/MarkLogic/Forests/gptm-prod-01-f-content-001-1/00038c0d is 243 MB; will discard positions at 256 MB.']
+        },
     ],
     '*': [
         { 'matches': 'Telemetry',

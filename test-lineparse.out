@@ -10,6 +10,9 @@ Tests starting for "C":
 Closing journal /data/MarkLogic/Forests/gptm-prod-01-f-content-001-2/Jou ...
 {'event': 'journals'}
 
+Creating journal archive /backup/gptm-prod-01-f-content/20260301-230...
+{'event': 'journal-archiving'}
+
 
 Tests starting for "D":
 
@@ -39,6 +42,9 @@ Forest gptm-prod-01-f-content-001-1 setting minQueryTimestamp to 177246157106610
 
 Forest::insert: Meters XDMP-INMMTRPLFULL: In-memory triple storage full; list: table=6%, wordsused=7%, wordsfree=91%, overhead=2%; tree: table=1%, wordsused=15%, wordsfree=85%, overhead=0%
 {'event': 'in-memory-full', 'forest': 'Meters', 'code': 'XDMP-INMMTRPLFULL'}
+
+Forest::doInsert: XDMP-INMMTREEFULL: In-memory tree storage ...
+{'event': 'in-memory-full', 'code': 'XDMP-INMMTREEFULL'}
 
 
 Tests starting for "I":
@@ -70,6 +76,9 @@ Merging 83 MB from /var/opt/MarkLogic/Forests/Meters/00004197, /var/opt/MarkLogi
 Merging 37 MB from /var/opt/MarkLogic/Forests/Meters/00004182 and /var/opt/MarkLogic/Forests/Meters/00004180 to /var/opt/MarkLogic/Forests/Meters/00004184, timestamp=16488943209770340
 {'event': 'merging', 'size': '37', 'stand': 'Meters/00004184', 'timestamp': '16488943209770340'}
 
+Memory low: huge+anon+swap+file=92%phys
+{'event': 'memory-low'}
+
 
 Tests starting for "O":
 
@@ -96,6 +105,12 @@ Saved 10 MB at 119 MB/sec to /var/opt/MarkLogic/Forests/rddr-content-1/00003c61
 
 Slow fsync /mnt/mldata/Forests/careempower-app-content-1/Label, 1.775 KB in 1.002 sec
 {'event': 'slow-message'}
+
+
+Tests starting for "T":
+
+Termlist for 11363135516565172648 in /data/MarkLogic/Forests/gptm-prod-01-f-content-001-1/00038c0d is 243 MB; will discard positions at 256 MB.
+{'event': 'termlist', 'size': '243'}
 
 
 Tests starting for "[":
