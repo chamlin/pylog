@@ -91,6 +91,16 @@ extract_config = {
           'post-process': {'event': [general_trace_event]}
         }
     ],
+
+
+    'C': [
+        { 'starts': 'Closing journal ',
+          'literal-extract': [{'event': 'journals'}],
+          'tests': [
+                'Closing journal /data/MarkLogic/Forests/gptm-prod-01-f-content-001-2/Jou ...',
+          ]
+        },
+    ],
     'D': [
         { 'starts': 'Deleted ',
           'general-extract': {'init': {'event': 'stand-deleted'}, 'names': ['size', 'rate', 'stand'], 'regex': r'Deleted (\d+) MB at (\d+) MB/sec (.*)'},
@@ -112,14 +122,21 @@ extract_config = {
     ],
     'F': [
         # TODO extract %s?,   is this the right event name?
+        { 'starts': 'Forest ',
+          'general-extract': {'init': {'event': 'journals'}, 'names': ['forest'],
+                'regex': r'Forest (\S+) (opening recycled|purging journal|RecoveryManager) '},
+          'tests': [
+                'Forest gptm-prod-01-f-content-rep1-012-2 opening recycled journal file /data/MarkLogic/Forests/gptm-prod-01-f-cont...',
+                'Forest Meters RecoveryManager wrote end cap'
+          ]
+        },
+        { 'starts': 'Forest ',
+          'general-extract': {'init': {'event': 'min-query-timestamp'}, 'names': ['forest','timestamp'], 'regex': r'Forest (\S+) setting minQueryTimestamp to (\d+)'},
+          'tests': ['Forest gptm-prod-01-f-content-001-1 setting minQueryTimestamp to 17724615710661000 due to merge']
+        },
         { 'starts': 'Forest::insert: ',
           'general-extract': {'init': {'event': 'in-memory-full'}, 'names': ['forest', 'code'], 'regex': r'Forest::insert: (\S+) (XDMP-.+?FULL): '},
           'tests': ['Forest::insert: Meters XDMP-INMMTRPLFULL: In-memory triple storage full; list: table=6%, wordsused=7%, wordsfree=91%, overhead=2%; tree: table=1%, wordsused=15%, wordsfree=85%, overhead=0%']
-        },
-        # TODO extract %s?,   is this the right event name?
-        { 'starts': 'Forest::doInsert: ',
-          'general-extract': {'init': {'event': 'in-memory-full'}, 'names': ['code'], 'regex': r'Forest::doInsert: (XDMP-.+?FULL): '},
-          'tests': ['Forest::doInsert: XDMP-INMMTREEFULL: In-memory tree storage full; list: table=1%, wordsused=30%, wordsfree=68%, overhead=2%; tree: table=16%, wordsused=100%, wordsfree=0%, overhead=0%']
         }
     ],
     'I': [
