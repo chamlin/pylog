@@ -185,7 +185,13 @@ extract_config = {
             'Merging 37 MB from /var/opt/MarkLogic/Forests/Meters/00004182 and /var/opt/MarkLogic/Forests/Meters/00004180 to /var/opt/MarkLogic/Forests/Meters/00004184, timestamp=16488943209770340'
           ],
           'post-process': {'stand': [shorten_stand]}
-        }
+        },
+        { 'starts': 'Memory low',
+          'literal-extract': [{'event': 'memory-low'}],
+          'tests': [
+              'Memory low: huge+anon+swap+file=92%phys'
+          ]
+        },
 
     ],
     'O': [
