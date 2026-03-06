@@ -5,19 +5,40 @@ Uploaded 1 records, 1 MB of Usage Data to Telemetry
 {'event': 'telemetry'}
 
 
+Tests starting for "C":
+
+Closing journal /data/MarkLogic/Forests/gptm-prod-01-f-content-001-2/Jou ...
+{'event': 'journals'}
+
+
 Tests starting for "D":
 
 Deleted 25 MB at 7066 MB/sec /var/opt/MarkLogic/Forests/Meters/00004222
 {'event': 'stand-deleted', 'size': '25', 'rate': '7066', 'stand': 'Meters/00004222'}
 
+Deadlock detected locking gptm-prod-01-f-content-001-2 /Transaction/GLOSS/00000000000790466009/1.xml
+{'event': 'deadlock'}
+
+Detecting indexes for database Documents
+{'event': 'detecting-indexes'}
+
+Detected indexes for database Documents: ws, fp, fcs, fds, few, fep, sln
+{'event': 'detecting-indexes'}
+
 
 Tests starting for "F":
 
+Forest gptm-prod-01-f-content-rep1-012-2 opening recycled journal file /data/MarkLogic/Forests/gptm-prod-01-f-cont...
+{'event': 'journals', 'forest': 'gptm-prod-01-f-content-rep1-012-2'}
+
+Forest Meters RecoveryManager wrote end cap
+{'event': 'journals', 'forest': 'Meters'}
+
+Forest gptm-prod-01-f-content-001-1 setting minQueryTimestamp to 17724615710661000 due to merge
+{'event': 'min-query-timestamp', 'forest': 'gptm-prod-01-f-content-001-1', 'timestamp': '17724615710661000'}
+
 Forest::insert: Meters XDMP-INMMTRPLFULL: In-memory triple storage full; list: table=6%, wordsused=7%, wordsfree=91%, overhead=2%; tree: table=1%, wordsused=15%, wordsfree=85%, overhead=0%
 {'event': 'in-memory-full', 'forest': 'Meters', 'code': 'XDMP-INMMTRPLFULL'}
-
-Forest::doInsert: XDMP-INMMTREEFULL: In-memory tree storage full; list: table=1%, wordsused=30%, wordsfree=68%, overhead=2%; tree: table=16%, wordsused=100%, wordsfree=0%, overhead=0%
-{'event': 'in-memory-full', 'code': 'XDMP-INMMTREEFULL'}
 
 
 Tests starting for "I":
@@ -60,6 +81,9 @@ Tests starting for "R":
 
 Refragmented new fields 10000 fragments in 20 sec at 496 fragments/sec on forest P_smartws_p2_04
 {'event': 'reindexer', 'reason': 'new fields', 'fragments': '10000', 'duration': '20', 'rate': '496', 'forest': 'P_smartws_p2_04'}
+
+Retrying xdmp:invoke update-transaction-from-transaction-trigger.xqy 10751236092397035323 Update 1 because 
+{'event': 'retry'}
 
 
 Tests starting for "S":
