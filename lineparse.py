@@ -67,12 +67,12 @@ extract_config = {
 
     '~': [
         { 'starts': '~OnDiskStand',
-          'general-extract': {'init': {'event': 'on-disk-stand-end'}, 'names': ['stand'], 'regex': '~OnDiskStand (.*)'},
+          'general-extract': {'init': {'event': 'on-disk-stand-end'}, 'names': ['stand'], 'regex': r'~OnDiskStand (.*)'},
           'tests': ['~OnDiskStand /var/replica-prod/Forests/P_initial_r11_04/00019082'],
           'post-process': {'stand': [shorten_stand]}
         },
         { 'starts': '~InMemoryStand',
-          'general-extract': {'init': {'event': 'in-memory-stand-end'}, 'names': ['stand'], 'regex': '~InMemoryStand (.*?)(, .*)?$'},
+          'general-extract': {'init': {'event': 'in-memory-stand-end'}, 'names': ['stand'], 'regex': r'~InMemoryStand (.*?)(, .*)?$'},
           'tests': [
             '~InMemoryStand /Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa7, indexes storage used % : rangeIndex=5%, reverseIndex=0%, tripleIndex=100%, geospatialRegionIndex=2%',
             '~InMemoryStand /MarkLogic_Data/Forests/P_smartws_r2_02/0001191c'
@@ -82,43 +82,55 @@ extract_config = {
     ],
     '[': [
         { 'starts': '[Event:id=Reindexer Trace]',
-          'general-extract': {'init': {'event': 'reindexer'}, 'names': ['reason', 'fragments', 'duration', 'rate', 'forest'], 'regex': '.*Refragmented (.+) (\d+) fragments in (\d+) sec at (\d+) .* forest (.*)'},
+          'general-extract': {'init': {'event': 'reindexer'}, 'names': ['reason', 'fragments', 'duration', 'rate', 'forest'], 'regex': r'.*Refragmented (.+) (\d+) fragments in (\d+) sec at (\d+) .* forest (.*)'},
           'tests': ['[Event:id=Reindexer Trace] Refragmented new fields 10002 fragments in 58 sec at 171 fragments/sec on forest P_initial_p25_01']
         },
         { 'starts': '[Event:id=',
-          'general-extract': {'init': {}, 'names': ['event'], 'regex': 'Event:id=([^]]+)'},
+          'general-extract': {'init': {}, 'names': ['event'], 'regex': r'Event:id=([^]]+)'},
           'tests': ['[Event:id=General Name] Just a test of the general fallback trace event extraction'],
           'post-process': {'event': [general_trace_event]}
         }
     ],
     'D': [
         { 'starts': 'Deleted ',
-          'general-extract': {'init': {'event': 'stand-deleted'}, 'names': ['size', 'rate', 'stand'], 'regex': 'Deleted (\d+) MB at (\d+) MB/sec (.*)'},
+          'general-extract': {'init': {'event': 'stand-deleted'}, 'names': ['size', 'rate', 'stand'], 'regex': r'Deleted (\d+) MB at (\d+) MB/sec (.*)'},
           'tests': ['Deleted 25 MB at 7066 MB/sec /var/opt/MarkLogic/Forests/Meters/00004222'],
           'post-process': {'stand': [shorten_stand]}
+        },
+        { 'starts': 'Deadlock detected ',
+          'literal-extract': [{'event': 'deadlock'}],
+          'tests': ['Deadlock detected locking gptm-prod-01-f-content-001-2 /Transaction/GLOSS/00000000000790466009/1.xml']
+        },
+        { 'starts': 'Detecting indexes ',
+          'literal-extract': [{'event': 'detecting-indexes'}],
+          'tests': ['Detecting indexes for database Documents']
+        },
+        { 'starts': 'Detected indexes ',
+          'literal-extract': [{'event': 'detecting-indexes'}],
+          'tests': ['Detected indexes for database Documents: ws, fp, fcs, fds, few, fep, sln']
         }
     ],
     'F': [
         # TODO extract %s?,   is this the right event name?
         { 'starts': 'Forest::insert: ',
-          'general-extract': {'init': {'event': 'in-memory-full'}, 'names': ['forest', 'code'], 'regex': 'Forest::insert: (\S+) (XDMP-.+?FULL): '},
+          'general-extract': {'init': {'event': 'in-memory-full'}, 'names': ['forest', 'code'], 'regex': r'Forest::insert: (\S+) (XDMP-.+?FULL): '},
           'tests': ['Forest::insert: Meters XDMP-INMMTRPLFULL: In-memory triple storage full; list: table=6%, wordsused=7%, wordsfree=91%, overhead=2%; tree: table=1%, wordsused=15%, wordsfree=85%, overhead=0%']
         },
         # TODO extract %s?,   is this the right event name?
         { 'starts': 'Forest::doInsert: ',
-          'general-extract': {'init': {'event': 'in-memory-full'}, 'names': ['code'], 'regex': 'Forest::doInsert: (XDMP-.+?FULL): '},
+          'general-extract': {'init': {'event': 'in-memory-full'}, 'names': ['code'], 'regex': r'Forest::doInsert: (XDMP-.+?FULL): '},
           'tests': ['Forest::doInsert: XDMP-INMMTREEFULL: In-memory tree storage full; list: table=1%, wordsused=30%, wordsfree=68%, overhead=2%; tree: table=16%, wordsused=100%, wordsfree=0%, overhead=0%']
         }
     ],
     'I': [
         { 'starts': 'InMemoryStand ',
           'general-extract': {'init': {'event': 'in-memory-stand'}, 'names': ['stand', 'disk', 'memory', 'list', 'tree', 'rangeIndex', 'reverseIndex', 'tripleIndex', 'geospatialRegionIndex'],
-                'regex': 'InMemoryStand (.*), disk=(\d+)MB, memory=(\d+)MB, list=(\d+)MB, tree=(\d+)MB, rangeIndex=(\d+)MB, reverseIndex=(\d+)MB, tripleIndex=(\d+)MB, geospatialRegionIndex=(\d+)MB'},
+                'regex': r'InMemoryStand (.*), disk=(\d+)MB, memory=(\d+)MB, list=(\d+)MB, tree=(\d+)MB, rangeIndex=(\d+)MB, reverseIndex=(\d+)MB, tripleIndex=(\d+)MB, geospatialRegionIndex=(\d+)MB'},
           'tests': ['InMemoryStand /Users/chamlin/Library/Application Support/MarkLogic/Data/Forests/Meters/00000fa9, disk=1MB, memory=457MB, list=48MB, tree=24MB, rangeIndex=16MB, reverseIndex=16MB, tripleIndex=384MB, geospatialRegionIndex=16MB'],
           'post-process': {'stand': [shorten_stand]}
         },
         { 'starts': 'IndexerEnv::putRangeIndex: XDMP-',
-          'general-extract': {'init': {'event': 'put-range-index'}, 'names': ['code'], 'regex': 'XDMP-.* (XDMP-[^:]+)'},
+          'general-extract': {'init': {'event': 'put-range-index'}, 'names': ['code'], 'regex': r'XDMP-.* (XDMP-[^:]+)'},
           'tests': ['IndexerEnv::putRangeIndex: XDMP-RANGEINDEX: Range index error: long fn:doc("/at/ksv/current/orders/9b0ca175-e26b-e86d-2151-00a49da8db01.xml")/*:customerorder/*:orderEntity/*:zip: XDMP-LEXVAL: Invalid lexical value ""']
         }
     ],
@@ -132,7 +144,7 @@ extract_config = {
 
         },
         { 'starts': 'Merged ',
-          'general-extract': {'init': {'event': 'merged'}, 'names': ['size', 'rate', 'stand'], 'regex': 'Merged (\d+) MB(?: in \d+ sec)? at (\d+) MB/sec to (.*)'},
+          'general-extract': {'init': {'event': 'merged'}, 'names': ['size', 'rate', 'stand'], 'regex': r'Merged (\d+) MB(?: in \d+ sec)? at (\d+) MB/sec to (.*)'},
           'tests': [
               'Merged 6 MB at 25 MB/sec to /var/opt/MarkLogic/Forests/rddr-content-1/00003c60',
               'Merged 51 MB in 2 sec at 25 MB/sec to /var/opt/MarkLogic/Forests/Meters/0000418d'
@@ -140,7 +152,7 @@ extract_config = {
           'post-process': {'stand': [shorten_stand]}
         },
         { 'starts': 'Merging ',
-          'general-extract': {'init': {'event': 'merging'}, 'names': ['size', 'stand', 'timestamp'], 'regex': 'Merging (\d+) MB from .* to (.*), timestamp=(\d+)'},
+          'general-extract': {'init': {'event': 'merging'}, 'names': ['size', 'stand', 'timestamp'], 'regex': r'Merging (\d+) MB from .* to (.*), timestamp=(\d+)'},
           'tests': [
             'Merging 83 MB from /var/opt/MarkLogic/Forests/Meters/00004197, /var/opt/MarkLogic/Forests/Meters/00004198, and /var/opt/MarkLogic/Forests/Meters/00004196 to /var/opt/MarkLogic/Forests/Meters/0000419a, timestamp=16488943209770340',
             'Merging 37 MB from /var/opt/MarkLogic/Forests/Meters/00004182 and /var/opt/MarkLogic/Forests/Meters/00004180 to /var/opt/MarkLogic/Forests/Meters/00004184, timestamp=16488943209770340'
@@ -151,25 +163,29 @@ extract_config = {
     ],
     'O': [
         { 'starts': 'OnDiskStand',
-          'general-extract': {'init': {'event': 'on-disk-stand'}, 'names': ['stand', 'disk', 'edisk', 'memory'], 'regex': 'OnDiskStand (.*), disk=(\d+)MB, edisk=(\d+)MB, memory=(\d+)MB'},
+          'general-extract': {'init': {'event': 'on-disk-stand'}, 'names': ['stand', 'disk', 'edisk', 'memory'], 'regex': r'OnDiskStand (.*), disk=(\d+)MB, edisk=(\d+)MB, memory=(\d+)MB'},
           'tests': ['OnDiskStand /MarkLogic_Data/Forests/P_initial_p23_04/00058661, disk=201MB, edisk=0MB, memory=16MB'],
           'post-process': {'stand': [shorten_stand]}
         }
     ],
     'R': [
         { 'starts': 'Refragmented',
-          'general-extract': {'init': {'event': 'reindexer'}, 'names': ['reason', 'fragments', 'duration', 'rate', 'forest'], 'regex': 'Refragmented (.+) (\d+) fragments in (\d+) sec at (\d+) .* forest (.*)'},
+          'general-extract': {'init': {'event': 'reindexer'}, 'names': ['reason', 'fragments', 'duration', 'rate', 'forest'], 'regex': r'Refragmented (.+) (\d+) fragments in (\d+) sec at (\d+) .* forest (.*)'},
           'tests': ['Refragmented new fields 10000 fragments in 20 sec at 496 fragments/sec on forest P_smartws_p2_04']
+        },
+        { 'starts': 'Retrying ',
+          'literal-extract': [{'event': 'retry'}],
+          'tests': ['Retrying xdmp:invoke update-transaction-from-transaction-trigger.xqy 10751236092397035323 Update 1 because ']
         }
     ],
     'S': [
         { 'starts': 'Saving ',
-          'general-extract': {'init': {'event': 'saving-stand'}, 'names': 'stand', 'regex': 'Saving (.+)'},
+          'general-extract': {'init': {'event': 'saving-stand'}, 'names': 'stand', 'regex': r'Saving (.+)'},
           'tests': ['Saving /var/opt/MarkLogic/Forests/rddr-content-1/00003c5b'],
           'post-process': {'stand': [shorten_stand]}
         },
         { 'starts': 'Saved ',
-          'general-extract': {'init': {'event': 'saved-stand'}, 'names': ['size', 'rate', 'stand'], 'regex': 'Saved (\d+) MB(?: in \d+ sec)? at (\d+) MB/sec to (.*)'},
+          'general-extract': {'init': {'event': 'saved-stand'}, 'names': ['size', 'rate', 'stand'], 'regex': r'Saved (\d+) MB(?: in \d+ sec)? at (\d+) MB/sec to (.*)'},
           'tests': ['Saved 10 MB at 119 MB/sec to /var/opt/MarkLogic/Forests/rddr-content-1/00003c61'],
           'post-process': {'stand': [shorten_stand]}
         },
